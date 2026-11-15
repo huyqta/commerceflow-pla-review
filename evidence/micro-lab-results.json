@@ -1,0 +1,209 @@
+{
+  "executed_at_utc": "2026-11-14T09:56:14.946847+00:00",
+  "environment": {
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+    "node": "v22.16.0"
+  },
+  "results": [
+    {
+      "id": "CF-001",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-001"
+    },
+    {
+      "id": "CF-002",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-002"
+    },
+    {
+      "id": "CF-003",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-003"
+    },
+    {
+      "id": "CF-004",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-004"
+    },
+    {
+      "id": "CF-005",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-005"
+    },
+    {
+      "id": "CF-006",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-006"
+    },
+    {
+      "id": "CF-007",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-007"
+    },
+    {
+      "id": "CF-008",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-008"
+    },
+    {
+      "id": "CF-009",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-009"
+    },
+    {
+      "id": "CF-010",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-010"
+    },
+    {
+      "id": "CF-011",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-011"
+    },
+    {
+      "id": "CF-012",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-012"
+    },
+    {
+      "id": "CF-013",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-013"
+    },
+    {
+      "id": "CF-014",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-014"
+    },
+    {
+      "id": "CF-015",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-015"
+    },
+    {
+      "id": "CF-016",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-016"
+    },
+    {
+      "id": "CF-017",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-017"
+    },
+    {
+      "id": "CF-018",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-018"
+    },
+    {
+      "id": "CF-019",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-019"
+    },
+    {
+      "id": "CF-020",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-020"
+    },
+    {
+      "id": "CF-021",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-021"
+    },
+    {
+      "id": "CF-022",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-022"
+    },
+    {
+      "id": "CF-023",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-023"
+    },
+    {
+      "id": "CF-024",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-024"
+    },
+    {
+      "id": "CF-025",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-025"
+    },
+    {
+      "id": "CF-026",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-026"
+    },
+    {
+      "id": "CF-027",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-027"
+    },
+    {
+      "id": "CF-028",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-028"
+    },
+    {
+      "id": "CF-029",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-029"
+    },
+    {
+      "id": "CF-030",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-030"
+    },
+    {
+      "id": "CF-031",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-031"
+    },
+    {
+      "id": "CF-032",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-032"
+    },
+    {
+      "id": "CF-033",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-033"
+    },
+    {
+      "id": "CF-034",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-034"
+    },
+    {
+      "id": "CF-035",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-035"
+    },
+    {
+      "id": "CF-036",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-036"
+    },
+    {
+      "id": "CF-037",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-037"
+    },
+    {
+      "id": "CF-038",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-038"
+    },
+    {
+      "id": "CF-039",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-039"
+    },
+    {
+      "id": "CF-040",
+      "exit_code": 0,
+      "signal": "MICRO_LAB_OK CF-040"
+    }
+  ]
+}

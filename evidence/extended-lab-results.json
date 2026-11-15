@@ -1,0 +1,22 @@
+[
+  {
+    "path": "labs/CF-014/reservation-race.mjs",
+    "exit_code": 0,
+    "output": "RESERVATION_RACE_DEMO_OK"
+  },
+  {
+    "path": "labs/CF-021/outbox-inbox-simulation.mjs",
+    "exit_code": 0,
+    "output": "OUTBOX_INBOX_DEMO_OK"
+  },
+  {
+    "path": "labs/CF-022/saga-compensation.mjs",
+    "exit_code": 0,
+    "output": "SAGA_COMPENSATION_DEMO_OK"
+  },
+  {
+    "path": "labs/CF-035/cloud-guard.mjs",
+    "exit_code": 0,
+    "output": "CLOUD_GUARD_DEFAULT_DENY_OK"
+  }
+]

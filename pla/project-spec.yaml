@@ -1,0 +1,58 @@
+schema_version: '1.2'
+project_id: commerceflow-cloud-native-learning
+title: CommerceFlow — Microservices, DDD, Clean Architecture và Cloud-Native trên GCP
+content_language: vi
+duration_weeks: 16
+estimated_hours: 160
+learner_level: intermediate
+learning_mode: guided
+deployment_track: cloud_run_primary_and_gke_lab
+cloud_budget_usd_per_month: 50
+budget_is_hard_cap: false
+status: draft_for_review
+github_published: false
+cloud_resources_provisioned: false
+target_stack:
+  runtime: Node.js 24 LTS (target; environment verification pending)
+  backend: NestJS 12 candidate (verify package compatibility)
+  frontend: React, Vite, TanStack Query
+  database: PostgreSQL, Prisma
+  eventing: Local event adapter and Google Cloud Pub/Sub
+  build: pnpm workspace; Docker
+  cloud: Cloud Run, Cloud SQL, Pub/Sub, Secret Manager, IAM, Artifact Registry
+  kubernetes: kind local, GKE short-lived lab
+  ci_cd: GitHub Actions, Workload Identity Federation
+  iac: Terraform
+mvp:
+  personas:
+  - quản trị viên
+  - nhân viên quản lý đơn hàng
+  functional:
+  - quản lý sản phẩm
+  - kiểm tra/giữ tồn kho
+  - tạo/hủy đơn
+  - thanh toán mô phỏng
+  - xem trạng thái eventual consistency
+  nonfunctional:
+  - không oversell
+  - idempotent handling
+  - trace correlation
+  - automated checks
+  - least privilege
+constraints:
+- không publish GitHub khi chưa duyệt
+- không tạo cloud resource khi chưa duyệt
+- không dùng dữ liệu thật
+- local-first
+- không khẳng định production-ready khi chưa test
+risk_register:
+- risk: Cloud SQL và GKE có thể vượt $50/tháng
+  mitigation: pricing estimate, GKE teardown và Cloud Run scale-to-zero; alternative DB lab local
+- risk: distributed race/duplicate events
+  mitigation: outbox, idempotency, optimistic locks và negative tests
+- risk: cross-service shared schema
+  mitigation: service-specific credentials và ownership tests
+- risk: framework version mismatch
+  mitigation: lockfile và environment smoke tests
+definition_of_success: Từ clean clone, có thể build/test local, chạy user journey, trình bày ADR, deploy Cloud Run
+  có phê duyệt, demo rollback/observability và cleanup có chứng cứ.

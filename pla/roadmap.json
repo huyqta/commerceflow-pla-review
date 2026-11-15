@@ -1,0 +1,2071 @@
+{
+  "schema_version": "1.2",
+  "project_id": "commerceflow-cloud-native-learning",
+  "domain": [
+    "software",
+    "cloud-devops"
+  ],
+  "content_language": "vi",
+  "milestones": [
+    {
+      "id": "M1",
+      "title": "Nền tảng & môi trường",
+      "gate": "Glossary, smoke tests, requirement scenarios và context map được review"
+    },
+    {
+      "id": "M2",
+      "title": "DDD & Clean Architecture",
+      "gate": "Domain tests chạy không cần NestJS, DB hoặc cloud"
+    },
+    {
+      "id": "M3",
+      "title": "NestJS Modular Monolith",
+      "gate": "Local integration: tạo đơn, chống đặt vượt kho"
+    },
+    {
+      "id": "M4",
+      "title": "Microservices & Distributed Systems",
+      "gate": "4 services độc lập, retry không gây thanh toán trùng, compensation chạy đúng"
+    },
+    {
+      "id": "M5",
+      "title": "React & Full-stack",
+      "gate": "E2E hành trình đăng nhập, sản phẩm, tạo đơn, theo dõi"
+    },
+    {
+      "id": "M6",
+      "title": "DevOps & Automation",
+      "gate": "CI kiểm lint/tests, build image, Terraform validate/plan không đổi cloud"
+    },
+    {
+      "id": "M7",
+      "title": "GCP & Kubernetes",
+      "gate": "Cloud Run demo được xác minh, GKE lab teardown có chứng cứ"
+    },
+    {
+      "id": "M8",
+      "title": "Operations & Capstone",
+      "gate": "Traces, failure drill, runbook và clean-room demo"
+    }
+  ],
+  "issues": [
+    {
+      "id": "CF-001",
+      "title": "Nền tảng và thuật ngữ: DDD, Clean Architecture, Microservices, GCP",
+      "milestone": "M1",
+      "depends_on": [],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của nền tảng và thuật ngữ: ddd, clean architecture, microservices, gcp.",
+        "Tạo được artifact có thể review: docs/glossary.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Hoàn thành concept map và mở rộng acronym; phân biệt aggregate với service.",
+        "Chạy micro-lab an toàn `node labs/CF-001/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/glossary.md` theo yêu cầu: Hoàn thành concept map và mở rộng acronym; phân biệt aggregate với service; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-001/README.md`."
+      ],
+      "deliverables": [
+        "docs/glossary.md",
+        "evidence/CF-001/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/glossary.md` tồn tại, chứa nội dung đặc thù về nền tảng và thuật ngữ: ddd, clean architecture, microservices, gcp và được review.",
+        "Micro-lab `node labs/CF-001/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-001/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-001/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/glossary.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 3,
+      "labels": [
+        "milestone:m1",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Nhầm Domain Event với Integration Event. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Giải thích vì sao một ứng dụng nhỏ không cần Microservices? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "foundations",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-002",
+      "title": "Chuẩn bị môi trường và smoke tests an toàn",
+      "milestone": "M1",
+      "depends_on": [
+        "CF-001"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của chuẩn bị môi trường và smoke tests an toàn.",
+        "Tạo được artifact có thể review: docs/environment.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Ghi nhận version Node, Git, Docker, pnpm và chạy starter tests.",
+        "Chạy micro-lab an toàn `node labs/CF-002/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/environment.md` theo yêu cầu: Ghi nhận version Node, Git, Docker, pnpm và chạy starter tests; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-002/README.md`."
+      ],
+      "deliverables": [
+        "docs/environment.md",
+        "evidence/CF-002/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/environment.md` tồn tại, chứa nội dung đặc thù về chuẩn bị môi trường và smoke tests an toàn và được review.",
+        "Micro-lab `node labs/CF-002/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-002/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-002/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/environment.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 3,
+      "labels": [
+        "milestone:m1",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Dùng Windows PowerShell chạy lệnh Bash. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Mô tả cách kiểm chứng một lệnh chạy trên OS khác? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "environment",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-003",
+      "title": "Requirements, use cases và acceptance scenarios",
+      "milestone": "M1",
+      "depends_on": [
+        "CF-002"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của requirements, use cases và acceptance scenarios.",
+        "Tạo được artifact có thể review: docs/requirements.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Mô tả tạo đơn thành công, hết hàng, thanh toán lỗi kèm Given/When/Then.",
+        "Chạy micro-lab an toàn `node labs/CF-003/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/requirements.md` theo yêu cầu: Mô tả tạo đơn thành công, hết hàng, thanh toán lỗi kèm Given/When/Then; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-003/README.md`."
+      ],
+      "deliverables": [
+        "docs/requirements.md",
+        "evidence/CF-003/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/requirements.md` tồn tại, chứa nội dung đặc thù về requirements, use cases và acceptance scenarios và được review.",
+        "Micro-lab `node labs/CF-003/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-003/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-003/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/requirements.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 3,
+      "labels": [
+        "milestone:m1",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Không định nghĩa được tiêu chí quan sát. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thêm kịch bản đơn hàng có 2 sản phẩm? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "lab",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-004",
+      "title": "Event Storming và Bounded Context Map",
+      "milestone": "M1",
+      "depends_on": [
+        "CF-003"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của event storming và bounded context map.",
+        "Tạo được artifact có thể review: docs/ddd/context-map.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Ghi command, domain event, policy và ownership từng context.",
+        "Chạy micro-lab an toàn `node labs/CF-004/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/ddd/context-map.md` theo yêu cầu: Ghi command, domain event, policy và ownership từng context; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-004/README.md`."
+      ],
+      "deliverables": [
+        "docs/ddd/context-map.md",
+        "evidence/CF-004/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/ddd/context-map.md` tồn tại, chứa nội dung đặc thù về event storming và bounded context map và được review.",
+        "Micro-lab `node labs/CF-004/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-004/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-004/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/ddd/context-map.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 3,
+      "labels": [
+        "milestone:m1",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Nhầm bảng DB với bounded context. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Vẽ luồng InventoryReserved được sinh ra ở đâu? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "lab",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-005",
+      "title": "ADRs, non-functional requirements và threat model",
+      "milestone": "M1",
+      "depends_on": [
+        "CF-004"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của adrs, non-functional requirements và threat model.",
+        "Tạo được artifact có thể review: docs/architecture.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Ghi ADR cho modular-monolith-first và các rủi ro dữ liệu, IAM, chi phí.",
+        "Chạy micro-lab an toàn `node labs/CF-005/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/architecture.md` theo yêu cầu: Ghi ADR cho modular-monolith-first và các rủi ro dữ liệu, IAM, chi phí; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-005/README.md`."
+      ],
+      "deliverables": [
+        "docs/architecture.md",
+        "evidence/CF-005/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/architecture.md` tồn tại, chứa nội dung đặc thù về adrs, non-functional requirements và threat model và được review.",
+        "Micro-lab `node labs/CF-005/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-005/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-005/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/architecture.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 2,
+      "labels": [
+        "milestone:m1",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Chọn công nghệ trước khi có decision criteria. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Nêu hai trường hợp không nên tách service? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "review",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-006",
+      "title": "Entity, Value Object, Aggregate và business invariants",
+      "milestone": "M2",
+      "depends_on": [
+        "CF-005"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của entity, value object, aggregate và business invariants.",
+        "Tạo được artifact có thể review: apps/order-service/src/domain/order.aggregate.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Viết Order aggregate kiểm quantity dương, không cho confirm từ cancelled.",
+        "Chạy micro-lab an toàn `node labs/CF-006/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/order-service/src/domain/order.aggregate.ts` theo yêu cầu: Viết Order aggregate kiểm quantity dương, không cho confirm từ cancelled; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-006/README.md`."
+      ],
+      "deliverables": [
+        "apps/order-service/src/domain/order.aggregate.ts",
+        "evidence/CF-006/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/order-service/src/domain/order.aggregate.ts` tồn tại, chứa nội dung đặc thù về entity, value object, aggregate và business invariants và được review.",
+        "Micro-lab `node labs/CF-006/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-006/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-006/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/order-service/src/domain/order.aggregate.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m2",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Entity chỉ là ORM model. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thêm invariant không cho đặt quantity bằng 0? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-007",
+      "title": "Domain Services, Domain Events và trạng thái đơn",
+      "milestone": "M2",
+      "depends_on": [
+        "CF-006"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của domain services, domain events và trạng thái đơn.",
+        "Tạo được artifact có thể review: apps/order-service/src/domain/events/order-created.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Định nghĩa domain event immutable; trạng thái Pending/Confirmed/Cancelled.",
+        "Chạy micro-lab an toàn `node labs/CF-007/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/order-service/src/domain/events/order-created.ts` theo yêu cầu: Định nghĩa domain event immutable; trạng thái Pending/Confirmed/Cancelled; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-007/README.md`."
+      ],
+      "deliverables": [
+        "apps/order-service/src/domain/events/order-created.ts",
+        "evidence/CF-007/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/order-service/src/domain/events/order-created.ts` tồn tại, chứa nội dung đặc thù về domain services, domain events và trạng thái đơn và được review.",
+        "Micro-lab `node labs/CF-007/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-007/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-007/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/order-service/src/domain/events/order-created.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m2",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Publish domain event trước khi commit DB. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Vẽ event lifecycle khi fail DB commit? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-008",
+      "title": "Ports, Adapters và Dependency Inversion",
+      "milestone": "M2",
+      "depends_on": [
+        "CF-007"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của ports, adapters và dependency inversion.",
+        "Tạo được artifact có thể review: apps/order-service/src/application/ports/order-repository.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Viết repository interface và in-memory adapter; domain không import Prisma.",
+        "Chạy micro-lab an toàn `node labs/CF-008/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/order-service/src/application/ports/order-repository.ts` theo yêu cầu: Viết repository interface và in-memory adapter; domain không import Prisma; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-008/README.md`."
+      ],
+      "deliverables": [
+        "apps/order-service/src/application/ports/order-repository.ts",
+        "evidence/CF-008/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/order-service/src/application/ports/order-repository.ts` tồn tại, chứa nội dung đặc thù về ports, adapters và dependency inversion và được review.",
+        "Micro-lab `node labs/CF-008/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-008/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-008/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/order-service/src/application/ports/order-repository.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m2",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Cho Infrastructure import ngược Domain sai chiều. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thay in-memory adapter bằng fake có lỗi? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-009",
+      "title": "Use Cases, Commands, Queries và Unit of Work",
+      "milestone": "M2",
+      "depends_on": [
+        "CF-008"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của use cases, commands, queries và unit of work.",
+        "Tạo được artifact có thể review: apps/order-service/src/application/use-cases/create-order.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Tách command handler và transaction boundary; trả business error rõ ràng.",
+        "Chạy micro-lab an toàn `node labs/CF-009/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/order-service/src/application/use-cases/create-order.ts` theo yêu cầu: Tách command handler và transaction boundary; trả business error rõ ràng; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-009/README.md`."
+      ],
+      "deliverables": [
+        "apps/order-service/src/application/use-cases/create-order.ts",
+        "evidence/CF-009/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/order-service/src/application/use-cases/create-order.ts` tồn tại, chứa nội dung đặc thù về use cases, commands, queries và unit of work và được review.",
+        "Micro-lab `node labs/CF-009/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-009/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-009/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/order-service/src/application/use-cases/create-order.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 5,
+      "labels": [
+        "milestone:m2",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Bọc external HTTP trong SQL transaction. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "So sánh command với query? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-010",
+      "title": "Domain tests và kiểm tra architecture dependency",
+      "milestone": "M2",
+      "depends_on": [
+        "CF-009"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của domain tests và kiểm tra architecture dependency.",
+        "Tạo được artifact có thể review: tests/architecture/order-boundary.test.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Viết negative tests và script kiểm không import ORM trong domain.",
+        "Chạy micro-lab an toàn `node labs/CF-010/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `tests/architecture/order-boundary.test.ts` theo yêu cầu: Viết negative tests và script kiểm không import ORM trong domain; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-010/README.md`."
+      ],
+      "deliverables": [
+        "tests/architecture/order-boundary.test.ts",
+        "evidence/CF-010/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `tests/architecture/order-boundary.test.ts` tồn tại, chứa nội dung đặc thù về domain tests và kiểm tra architecture dependency và được review.",
+        "Micro-lab `node labs/CF-010/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-010/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-010/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `tests/architecture/order-boundary.test.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 5,
+      "labels": [
+        "milestone:m2",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Chỉ test happy path. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thêm invariant trùng order item? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "review",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-011",
+      "title": "NestJS workspace, module wiring và configuration",
+      "milestone": "M3",
+      "depends_on": [
+        "CF-010"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của nestjs workspace, module wiring và configuration.",
+        "Tạo được artifact có thể review: apps/api-gateway/src/main.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Tạo NestJS bootstrap và modules; xác nhận Node/Nest compatibility.",
+        "Chạy micro-lab an toàn `node labs/CF-011/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/api-gateway/src/main.ts` theo yêu cầu: Tạo NestJS bootstrap và modules; xác nhận Node/Nest compatibility; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-011/README.md`."
+      ],
+      "deliverables": [
+        "apps/api-gateway/src/main.ts",
+        "evidence/CF-011/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/api-gateway/src/main.ts` tồn tại, chứa nội dung đặc thù về nestjs workspace, module wiring và configuration và được review.",
+        "Micro-lab `node labs/CF-011/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-011/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-011/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/api-gateway/src/main.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 3,
+      "labels": [
+        "milestone:m3",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Cấu hình secrets trong source. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thêm health route không cần DB? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-012",
+      "title": "PostgreSQL, Prisma migrations và transaction",
+      "milestone": "M3",
+      "depends_on": [
+        "CF-011"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của postgresql, prisma migrations và transaction.",
+        "Tạo được artifact có thể review: apps/order-service/prisma/schema.prisma.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Thiết kế Order/OrderItem schema; tạo migration với DB local.",
+        "Chạy micro-lab an toàn `node labs/CF-012/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/order-service/prisma/schema.prisma` theo yêu cầu: Thiết kế Order/OrderItem schema; tạo migration với DB local; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-012/README.md`."
+      ],
+      "deliverables": [
+        "apps/order-service/prisma/schema.prisma",
+        "evidence/CF-012/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/order-service/prisma/schema.prisma` tồn tại, chứa nội dung đặc thù về postgresql, prisma migrations và transaction và được review.",
+        "Micro-lab `node labs/CF-012/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-012/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-012/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/order-service/prisma/schema.prisma` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m3",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Migrations không rollback plan. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Viết SQL unique constraint cho orderId? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-013",
+      "title": "Catalog REST API và validation",
+      "milestone": "M3",
+      "depends_on": [
+        "CF-012"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của catalog rest api và validation.",
+        "Tạo được artifact có thể review: apps/catalog-service/src/catalog.controller.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Viết GET/POST contract, DTO validation, status codes và tests.",
+        "Chạy micro-lab an toàn `node labs/CF-013/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/catalog-service/src/catalog.controller.ts` theo yêu cầu: Viết GET/POST contract, DTO validation, status codes và tests; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-013/README.md`."
+      ],
+      "deliverables": [
+        "apps/catalog-service/src/catalog.controller.ts",
+        "evidence/CF-013/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/catalog-service/src/catalog.controller.ts` tồn tại, chứa nội dung đặc thù về catalog rest api và validation và được review.",
+        "Micro-lab `node labs/CF-013/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-013/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-013/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/catalog-service/src/catalog.controller.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m3",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Trả entity nội bộ trực tiếp ra API. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thiết kế negative test cho giá âm? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-014",
+      "title": "Inventory reservation và chống overselling",
+      "milestone": "M3",
+      "depends_on": [
+        "CF-013"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của inventory reservation và chống overselling.",
+        "Tạo được artifact có thể review: apps/inventory-service/src/application/reserve-stock.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Implement atomic conditional update và concurrency tests.",
+        "Chạy micro-lab an toàn `node labs/CF-014/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/inventory-service/src/application/reserve-stock.ts` theo yêu cầu: Implement atomic conditional update và concurrency tests; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-014/README.md`."
+      ],
+      "deliverables": [
+        "apps/inventory-service/src/application/reserve-stock.ts",
+        "evidence/CF-014/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/inventory-service/src/application/reserve-stock.ts` tồn tại, chứa nội dung đặc thù về inventory reservation và chống overselling và được review.",
+        "Micro-lab `node labs/CF-014/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-014/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-014/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/inventory-service/src/application/reserve-stock.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 5,
+      "labels": [
+        "milestone:m3",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Read-then-write race condition. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Mô phỏng hai đơn cùng giữ món cuối? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-015",
+      "title": "Order lifecycle trong modular monolith",
+      "milestone": "M3",
+      "depends_on": [
+        "CF-014"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của order lifecycle trong modular monolith.",
+        "Tạo được artifact có thể review: apps/order-service/src/application/place-order.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Nối Catalog/Inventory/Order nội bộ qua interfaces.",
+        "Chạy micro-lab an toàn `node labs/CF-015/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/order-service/src/application/place-order.ts` theo yêu cầu: Nối Catalog/Inventory/Order nội bộ qua interfaces; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-015/README.md`."
+      ],
+      "deliverables": [
+        "apps/order-service/src/application/place-order.ts",
+        "evidence/CF-015/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/order-service/src/application/place-order.ts` tồn tại, chứa nội dung đặc thù về order lifecycle trong modular monolith và được review.",
+        "Micro-lab `node labs/CF-015/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-015/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-015/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/order-service/src/application/place-order.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m3",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Để controller nắm nghiệp vụ. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Kiểm tra state machine cancel sau confirm? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-016",
+      "title": "AuthN/AuthZ, OpenAPI và integration tests",
+      "milestone": "M3",
+      "depends_on": [
+        "CF-015"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của authn/authz, openapi và integration tests.",
+        "Tạo được artifact có thể review: tests/integration/order-api.spec.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Thêm route authorization, input validation và test 401/403.",
+        "Chạy micro-lab an toàn `node labs/CF-016/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `tests/integration/order-api.spec.ts` theo yêu cầu: Thêm route authorization, input validation và test 401/403; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-016/README.md`."
+      ],
+      "deliverables": [
+        "tests/integration/order-api.spec.ts",
+        "evidence/CF-016/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `tests/integration/order-api.spec.ts` tồn tại, chứa nội dung đặc thù về authn/authz, openapi và integration tests và được review.",
+        "Micro-lab `node labs/CF-016/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-016/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-016/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `tests/integration/order-api.spec.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m3",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Dùng JWT giả thay production verifier. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Giải thích khác nhau của 401 và 403? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "review",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-017",
+      "title": "Service boundaries, extraction strategy, data ownership",
+      "milestone": "M4",
+      "depends_on": [
+        "CF-016"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của service boundaries, extraction strategy, data ownership.",
+        "Tạo được artifact có thể review: docs/ddd/extraction-plan.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Định nghĩa API contracts, owner của schema, migration sequence.",
+        "Chạy micro-lab an toàn `node labs/CF-017/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/ddd/extraction-plan.md` theo yêu cầu: Định nghĩa API contracts, owner của schema, migration sequence; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-017/README.md`."
+      ],
+      "deliverables": [
+        "docs/ddd/extraction-plan.md",
+        "evidence/CF-017/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/ddd/extraction-plan.md` tồn tại, chứa nội dung đặc thù về service boundaries, extraction strategy, data ownership và được review.",
+        "Micro-lab `node labs/CF-017/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-017/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-017/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/ddd/extraction-plan.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m4",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Chia service theo CRUD/table. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Viết rollback plan khi tách Inventory? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-018",
+      "title": "Tách Catalog và Inventory thành dịch vụ độc lập",
+      "milestone": "M4",
+      "depends_on": [
+        "CF-017"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của tách catalog và inventory thành dịch vụ độc lập.",
+        "Tạo được artifact có thể review: apps/inventory-service/src/main.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Chạy riêng process/port; loại bỏ cross-service DB access.",
+        "Chạy micro-lab an toàn `node labs/CF-018/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/inventory-service/src/main.ts` theo yêu cầu: Chạy riêng process/port; loại bỏ cross-service DB access; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-018/README.md`."
+      ],
+      "deliverables": [
+        "apps/inventory-service/src/main.ts",
+        "evidence/CF-018/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/inventory-service/src/main.ts` tồn tại, chứa nội dung đặc thù về tách catalog và inventory thành dịch vụ độc lập và được review.",
+        "Micro-lab `node labs/CF-018/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-018/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-018/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/inventory-service/src/main.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m4",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Service truy cập schema của nhau. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Tắt Catalog và đo tác động tới Inventory? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-019",
+      "title": "Tách Ordering/Payment và hợp đồng API",
+      "milestone": "M4",
+      "depends_on": [
+        "CF-018"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của tách ordering/payment và hợp đồng api.",
+        "Tạo được artifact có thể review: packages/contracts/src/order.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Tạo versioned contract; negative/compatibility tests.",
+        "Chạy micro-lab an toàn `node labs/CF-019/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `packages/contracts/src/order.ts` theo yêu cầu: Tạo versioned contract; negative/compatibility tests; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-019/README.md`."
+      ],
+      "deliverables": [
+        "packages/contracts/src/order.ts",
+        "evidence/CF-019/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `packages/contracts/src/order.ts` tồn tại, chứa nội dung đặc thù về tách ordering/payment và hợp đồng api và được review.",
+        "Micro-lab `node labs/CF-019/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-019/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-019/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `packages/contracts/src/order.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m4",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Chia sẻ domain implementation qua common package. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thêm field optional không breaking? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-020",
+      "title": "Event bus abstraction và Pub/Sub adapter",
+      "milestone": "M4",
+      "depends_on": [
+        "CF-019"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của event bus abstraction và pub/sub adapter.",
+        "Tạo được artifact có thể review: packages/messaging/src/event-bus.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Tạo interface publish/subscribe, local adapter; cloud adapter là lab riêng.",
+        "Chạy micro-lab an toàn `node labs/CF-020/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `packages/messaging/src/event-bus.ts` theo yêu cầu: Tạo interface publish/subscribe, local adapter; cloud adapter là lab riêng; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-020/README.md`."
+      ],
+      "deliverables": [
+        "packages/messaging/src/event-bus.ts",
+        "evidence/CF-020/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `packages/messaging/src/event-bus.ts` tồn tại, chứa nội dung đặc thù về event bus abstraction và pub/sub adapter và được review.",
+        "Micro-lab `node labs/CF-020/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-020/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-020/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `packages/messaging/src/event-bus.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m4",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Assume exactly-once delivery. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thêm eventId và correlationId? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-021",
+      "title": "Transactional Outbox/Inbox, idempotent consumers",
+      "milestone": "M4",
+      "depends_on": [
+        "CF-020"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của transactional outbox/inbox, idempotent consumers.",
+        "Tạo được artifact có thể review: apps/order-service/src/infrastructure/outbox-publisher.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Ghi domain state + outbox atomic; publisher retry và inbox dedupe.",
+        "Chạy micro-lab an toàn `node labs/CF-021/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/order-service/src/infrastructure/outbox-publisher.ts` theo yêu cầu: Ghi domain state + outbox atomic; publisher retry và inbox dedupe; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-021/README.md`."
+      ],
+      "deliverables": [
+        "apps/order-service/src/infrastructure/outbox-publisher.ts",
+        "evidence/CF-021/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/order-service/src/infrastructure/outbox-publisher.ts` tồn tại, chứa nội dung đặc thù về transactional outbox/inbox, idempotent consumers và được review.",
+        "Micro-lab `node labs/CF-021/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-021/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-021/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/order-service/src/infrastructure/outbox-publisher.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 5,
+      "labels": [
+        "milestone:m4",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Dual-write giữa database và broker. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thử publish 2 lần cùng eventId? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-022",
+      "title": "Saga orchestration, compensation, eventual consistency",
+      "milestone": "M4",
+      "depends_on": [
+        "CF-021"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của saga orchestration, compensation, eventual consistency.",
+        "Tạo được artifact có thể review: apps/order-service/src/application/order-saga.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Xây state transitions, reserve/pay/compensate và timeout recovery.",
+        "Chạy micro-lab an toàn `node labs/CF-022/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/order-service/src/application/order-saga.ts` theo yêu cầu: Xây state transitions, reserve/pay/compensate và timeout recovery; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-022/README.md`."
+      ],
+      "deliverables": [
+        "apps/order-service/src/application/order-saga.ts",
+        "evidence/CF-022/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/order-service/src/application/order-saga.ts` tồn tại, chứa nội dung đặc thù về saga orchestration, compensation, eventual consistency và được review.",
+        "Micro-lab `node labs/CF-022/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-022/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-022/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/order-service/src/application/order-saga.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m4",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Compensation giả định undo mọi side effect. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Bổ sung payment timeout scenario? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-023",
+      "title": "Resilience, retries, dead-letter và failure injection",
+      "milestone": "M4",
+      "depends_on": [
+        "CF-022"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của resilience, retries, dead-letter và failure injection.",
+        "Tạo được artifact có thể review: tests/faults/retry-scenarios.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Thiết kế retry bounded, backoff và dead-letter replay.",
+        "Chạy micro-lab an toàn `node labs/CF-023/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `tests/faults/retry-scenarios.md` theo yêu cầu: Thiết kế retry bounded, backoff và dead-letter replay; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-023/README.md`."
+      ],
+      "deliverables": [
+        "tests/faults/retry-scenarios.md",
+        "evidence/CF-023/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `tests/faults/retry-scenarios.md` tồn tại, chứa nội dung đặc thù về resilience, retries, dead-letter và failure injection và được review.",
+        "Micro-lab `node labs/CF-023/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-023/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-023/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `tests/faults/retry-scenarios.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 3,
+      "labels": [
+        "milestone:m4",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Retry non-idempotent request vô hạn. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Phân biệt transient và permanent error? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "review",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-024",
+      "title": "ReactJS/Vite routing và UI shell",
+      "milestone": "M5",
+      "depends_on": [
+        "CF-016"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của reactjs/vite routing và ui shell.",
+        "Tạo được artifact có thể review: apps/web/src/App.tsx.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Tạo navigation, route layout và accessible UI shell.",
+        "Chạy micro-lab an toàn `node labs/CF-024/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/web/src/App.tsx` theo yêu cầu: Tạo navigation, route layout và accessible UI shell; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-024/README.md`."
+      ],
+      "deliverables": [
+        "apps/web/src/App.tsx",
+        "evidence/CF-024/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/web/src/App.tsx` tồn tại, chứa nội dung đặc thù về reactjs/vite routing và ui shell và được review.",
+        "Micro-lab `node labs/CF-024/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-024/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-024/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/web/src/App.tsx` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m5",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Trộn API fetch và UI presentation. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thêm trang 404? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-025",
+      "title": "Product Management và Inventory Dashboard",
+      "milestone": "M5",
+      "depends_on": [
+        "CF-024",
+        "CF-018"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của product management và inventory dashboard.",
+        "Tạo được artifact có thể review: apps/web/src/features/catalog/ProductList.tsx.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Tạo data fetching, loading/empty/error states.",
+        "Chạy micro-lab an toàn `node labs/CF-025/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/web/src/features/catalog/ProductList.tsx` theo yêu cầu: Tạo data fetching, loading/empty/error states; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-025/README.md`."
+      ],
+      "deliverables": [
+        "apps/web/src/features/catalog/ProductList.tsx",
+        "evidence/CF-025/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/web/src/features/catalog/ProductList.tsx` tồn tại, chứa nội dung đặc thù về product management và inventory dashboard và được review.",
+        "Micro-lab `node labs/CF-025/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-025/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-025/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/web/src/features/catalog/ProductList.tsx` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m5",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Cache server state sai cách. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thiết kế empty state? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-026",
+      "title": "Order Management và state transitions UI",
+      "milestone": "M5",
+      "depends_on": [
+        "CF-025",
+        "CF-023"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của order management và state transitions ui.",
+        "Tạo được artifact có thể review: apps/web/src/features/orders/OrderPage.tsx.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Tạo order submission và polling trạng thái eventual consistency.",
+        "Chạy micro-lab an toàn `node labs/CF-026/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `apps/web/src/features/orders/OrderPage.tsx` theo yêu cầu: Tạo order submission và polling trạng thái eventual consistency; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-026/README.md`."
+      ],
+      "deliverables": [
+        "apps/web/src/features/orders/OrderPage.tsx",
+        "evidence/CF-026/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `apps/web/src/features/orders/OrderPage.tsx` tồn tại, chứa nội dung đặc thù về order management và state transitions ui và được review.",
+        "Micro-lab `node labs/CF-026/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-026/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-026/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `apps/web/src/features/orders/OrderPage.tsx` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 5,
+      "labels": [
+        "milestone:m5",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: UI báo confirmed trước khi saga kết thúc. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Test pending kéo dài? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-027",
+      "title": "Auth integration, React tests và Playwright E2E",
+      "milestone": "M5",
+      "depends_on": [
+        "CF-026",
+        "CF-016"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của auth integration, react tests và playwright e2e.",
+        "Tạo được artifact có thể review: tests/e2e/order-flow.spec.ts.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Tạo test login, order failure, retry view; fake identity local.",
+        "Chạy micro-lab an toàn `node labs/CF-027/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `tests/e2e/order-flow.spec.ts` theo yêu cầu: Tạo test login, order failure, retry view; fake identity local; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-027/README.md`."
+      ],
+      "deliverables": [
+        "tests/e2e/order-flow.spec.ts",
+        "evidence/CF-027/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `tests/e2e/order-flow.spec.ts` tồn tại, chứa nội dung đặc thù về auth integration, react tests và playwright e2e và được review.",
+        "Micro-lab `node labs/CF-027/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-027/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-027/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `tests/e2e/order-flow.spec.ts` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 5,
+      "labels": [
+        "milestone:m5",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Bỏ qua lỗi accessibility. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thêm test 403 khi user thiếu quyền? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "review",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-028",
+      "title": "Multi-stage Docker và health probes",
+      "milestone": "M6",
+      "depends_on": [
+        "CF-023",
+        "CF-027"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của multi-stage docker và health probes.",
+        "Tạo được artifact có thể review: infra/docker/Dockerfile.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Viết non-root multi-stage Dockerfile và Compose health check.",
+        "Chạy micro-lab an toàn `node labs/CF-028/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `infra/docker/Dockerfile` theo yêu cầu: Viết non-root multi-stage Dockerfile và Compose health check; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-028/README.md`."
+      ],
+      "deliverables": [
+        "infra/docker/Dockerfile",
+        "evidence/CF-028/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `infra/docker/Dockerfile` tồn tại, chứa nội dung đặc thù về multi-stage docker và health probes và được review.",
+        "Micro-lab `node labs/CF-028/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-028/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-028/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `infra/docker/Dockerfile` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m6",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Copy .env chứa secrets vào image. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "So sánh liveness và readiness? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-029",
+      "title": "GitHub Actions CI: lint, typecheck, test, build",
+      "milestone": "M6",
+      "depends_on": [
+        "CF-028"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của github actions ci: lint, typecheck, test, build.",
+        "Tạo được artifact có thể review: .github/workflows/ci.yml.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Tạo pipeline tối thiểu và pin permissions.",
+        "Chạy micro-lab an toàn `node labs/CF-029/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `.github/workflows/ci.yml` theo yêu cầu: Tạo pipeline tối thiểu và pin permissions; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-029/README.md`."
+      ],
+      "deliverables": [
+        ".github/workflows/ci.yml",
+        "evidence/CF-029/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `.github/workflows/ci.yml` tồn tại, chứa nội dung đặc thù về github actions ci: lint, typecheck, test, build và được review.",
+        "Micro-lab `node labs/CF-029/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-029/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-029/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `.github/workflows/ci.yml` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m6",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Workflow dùng write permissions trên PR. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thêm dependency cache? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-030",
+      "title": "Contract/E2E/security testing matrix",
+      "milestone": "M6",
+      "depends_on": [
+        "CF-029"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của contract/e2e/security testing matrix.",
+        "Tạo được artifact có thể review: docs/testing/test-matrix.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Lập matrix positive/negative/contract/security và chạy local smoke.",
+        "Chạy micro-lab an toàn `node labs/CF-030/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/testing/test-matrix.md` theo yêu cầu: Lập matrix positive/negative/contract/security và chạy local smoke; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-030/README.md`."
+      ],
+      "deliverables": [
+        "docs/testing/test-matrix.md",
+        "evidence/CF-030/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/testing/test-matrix.md` tồn tại, chứa nội dung đặc thù về contract/e2e/security testing matrix và được review.",
+        "Micro-lab `node labs/CF-030/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-030/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-030/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/testing/test-matrix.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 3,
+      "labels": [
+        "milestone:m6",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Chỉ tin vào tỷ lệ coverage. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Viết consumer contract break scenario? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "review",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-031",
+      "title": "Artifact Registry và image provenance",
+      "milestone": "M6",
+      "depends_on": [
+        "CF-030"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của artifact registry và image provenance.",
+        "Tạo được artifact có thể review: docs/deployment/artifact-plan.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Ghi build immutable tag, SHA digest và provenance; chưa push cloud.",
+        "Chạy micro-lab an toàn `node labs/CF-031/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/deployment/artifact-plan.md` theo yêu cầu: Ghi build immutable tag, SHA digest và provenance; chưa push cloud; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-031/README.md`."
+      ],
+      "deliverables": [
+        "docs/deployment/artifact-plan.md",
+        "evidence/CF-031/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/deployment/artifact-plan.md` tồn tại, chứa nội dung đặc thù về artifact registry và image provenance và được review.",
+        "Micro-lab `node labs/CF-031/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-031/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-031/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/deployment/artifact-plan.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 3,
+      "labels": [
+        "milestone:m6",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Dùng latest tag không truy vết. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Đề xuất rollback image digest? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-032",
+      "title": "Terraform, state, IAM và validate/plan",
+      "milestone": "M6",
+      "depends_on": [
+        "CF-031"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của terraform, state, iam và validate/plan.",
+        "Tạo được artifact có thể review: infra/terraform/README.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Soạn Terraform module structure, backend state và least privilege.",
+        "Chạy micro-lab an toàn `node labs/CF-032/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `infra/terraform/README.md` theo yêu cầu: Soạn Terraform module structure, backend state và least privilege; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-032/README.md`."
+      ],
+      "deliverables": [
+        "infra/terraform/README.md",
+        "evidence/CF-032/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `infra/terraform/README.md` tồn tại, chứa nội dung đặc thù về terraform, state, iam và validate/plan và được review.",
+        "Micro-lab `node labs/CF-032/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-032/README.md` và giải thích kết quả."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-032/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `infra/terraform/README.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m6",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Lưu state chứa secrets công khai. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Giải thích plan khác apply? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-033",
+      "title": "GCP sandbox, budgets, IAM, networking",
+      "milestone": "M7",
+      "depends_on": [
+        "CF-032"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của gcp sandbox, budgets, iam, networking.",
+        "Tạo được artifact có thể review: docs/deployment/gcp-sandbox.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Xác định project sandbox, cost estimate, budget alert và network boundaries.",
+        "Chạy micro-lab an toàn `node labs/CF-033/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/deployment/gcp-sandbox.md` theo yêu cầu: Xác định project sandbox, cost estimate, budget alert và network boundaries; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-033/README.md`."
+      ],
+      "deliverables": [
+        "docs/deployment/gcp-sandbox.md",
+        "evidence/CF-033/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/deployment/gcp-sandbox.md` tồn tại, chứa nội dung đặc thù về gcp sandbox, budgets, iam, networking và được review.",
+        "Micro-lab `node labs/CF-033/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-033/README.md` và giải thích kết quả.",
+        "Không tạo tài nguyên cloud khi chưa có phê duyệt cụ thể và dự toán chi phí."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-033/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/deployment/gcp-sandbox.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m7",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Budget alert không tự chặn chi tiêu. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Viết bảng resource inventory? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-034",
+      "title": "Terraform Cloud SQL/PubSub/Secrets/Cloud Run plan",
+      "milestone": "M7",
+      "depends_on": [
+        "CF-033"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của terraform cloud sql/pubsub/secrets/cloud run plan.",
+        "Tạo được artifact có thể review: infra/terraform/environments/lab/main.tf.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Lập plan cloud có cost review, không apply thiếu phê duyệt.",
+        "Chạy micro-lab an toàn `node labs/CF-034/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `infra/terraform/environments/lab/main.tf` theo yêu cầu: Lập plan cloud có cost review, không apply thiếu phê duyệt; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-034/README.md`."
+      ],
+      "deliverables": [
+        "infra/terraform/environments/lab/main.tf",
+        "evidence/CF-034/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `infra/terraform/environments/lab/main.tf` tồn tại, chứa nội dung đặc thù về terraform cloud sql/pubsub/secrets/cloud run plan và được review.",
+        "Micro-lab `node labs/CF-034/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-034/README.md` và giải thích kết quả.",
+        "Không tạo tài nguyên cloud khi chưa có phê duyệt cụ thể và dự toán chi phí."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-034/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `infra/terraform/environments/lab/main.tf` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 6,
+      "labels": [
+        "milestone:m7",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Bật Cloud SQL 24/7 vô tình tốn tiền. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Chọn DB hosting fallback khi vượt ngân sách? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-035",
+      "title": "Cloud Run deploy, auth push events và rollback",
+      "milestone": "M7",
+      "depends_on": [
+        "CF-034",
+        "CF-031"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của cloud run deploy, auth push events và rollback.",
+        "Tạo được artifact có thể review: docs/deployment/cloud-run.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Deploy theo duyệt riêng; identity binding, health check, revision rollback.",
+        "Chạy micro-lab an toàn `node labs/CF-035/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/deployment/cloud-run.md` theo yêu cầu: Deploy theo duyệt riêng; identity binding, health check, revision rollback; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-035/README.md`."
+      ],
+      "deliverables": [
+        "docs/deployment/cloud-run.md",
+        "evidence/CF-035/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/deployment/cloud-run.md` tồn tại, chứa nội dung đặc thù về cloud run deploy, auth push events và rollback và được review.",
+        "Micro-lab `node labs/CF-035/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-035/README.md` và giải thích kết quả.",
+        "Không tạo tài nguyên cloud khi chưa có phê duyệt cụ thể và dự toán chi phí."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-035/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/deployment/cloud-run.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 6,
+      "labels": [
+        "milestone:m7",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Public event consumer không xác thực. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Chứng minh cloud run invoker permission? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "release",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-036",
+      "title": "Kubernetes local: Pods, Deployments, Service, HPA",
+      "milestone": "M7",
+      "depends_on": [
+        "CF-028"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của kubernetes local: pods, deployments, service, hpa.",
+        "Tạo được artifact có thể review: infra/kubernetes/base/deployment.yaml.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Tạo manifests local, probe, resource quota và rollout demo.",
+        "Chạy micro-lab an toàn `node labs/CF-036/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `infra/kubernetes/base/deployment.yaml` theo yêu cầu: Tạo manifests local, probe, resource quota và rollout demo; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-036/README.md`."
+      ],
+      "deliverables": [
+        "infra/kubernetes/base/deployment.yaml",
+        "evidence/CF-036/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `infra/kubernetes/base/deployment.yaml` tồn tại, chứa nội dung đặc thù về kubernetes local: pods, deployments, service, hpa và được review.",
+        "Micro-lab `node labs/CF-036/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-036/README.md` và giải thích kết quả.",
+        "Không tạo tài nguyên cloud khi chưa có phê duyệt cụ thể và dự toán chi phí."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-036/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `infra/kubernetes/base/deployment.yaml` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m7",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Probe sai tạo restart loop. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "So sánh requests và limits? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-037",
+      "title": "GKE lab: deployment, rollback, teardown",
+      "milestone": "M7",
+      "depends_on": [
+        "CF-036",
+        "CF-033"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của gke lab: deployment, rollback, teardown.",
+        "Tạo được artifact có thể review: docs/deployment/gke-lab.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Dự toán, approval gate, deploy thử và teardown; không luôn bật.",
+        "Chạy micro-lab an toàn `node labs/CF-037/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/deployment/gke-lab.md` theo yêu cầu: Dự toán, approval gate, deploy thử và teardown; không luôn bật; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-037/README.md`."
+      ],
+      "deliverables": [
+        "docs/deployment/gke-lab.md",
+        "evidence/CF-037/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/deployment/gke-lab.md` tồn tại, chứa nội dung đặc thù về gke lab: deployment, rollback, teardown và được review.",
+        "Micro-lab `node labs/CF-037/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-037/README.md` và giải thích kết quả.",
+        "Không tạo tài nguyên cloud khi chưa có phê duyệt cụ thể và dự toán chi phí."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-037/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/deployment/gke-lab.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m7",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Quên LoadBalancer/NAT sau lab. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Bổ sung cleanup checklist? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "release",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-038",
+      "title": "Observability: tracing, metrics, logs và alerts",
+      "milestone": "M8",
+      "depends_on": [
+        "CF-035",
+        "CF-027"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của observability: tracing, metrics, logs và alerts.",
+        "Tạo được artifact có thể review: docs/runbook.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Thiết kế correlation ID và dashboard SLI, demo trace xuyên services.",
+        "Chạy micro-lab an toàn `node labs/CF-038/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/runbook.md` theo yêu cầu: Thiết kế correlation ID và dashboard SLI, demo trace xuyên services; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-038/README.md`."
+      ],
+      "deliverables": [
+        "docs/runbook.md",
+        "evidence/CF-038/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/runbook.md` tồn tại, chứa nội dung đặc thù về observability: tracing, metrics, logs và alerts và được review.",
+        "Micro-lab `node labs/CF-038/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-038/README.md` và giải thích kết quả.",
+        "Không tạo tài nguyên cloud khi chưa có phê duyệt cụ thể và dự toán chi phí."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-038/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/runbook.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m8",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Log PII/tokens. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Định nghĩa một alert tránh noise? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "implementation",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-039",
+      "title": "Failure drills, security, cost review và recovery",
+      "milestone": "M8",
+      "depends_on": [
+        "CF-038",
+        "CF-037"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của failure drills, security, cost review và recovery.",
+        "Tạo được artifact có thể review: docs/testing/failure-drills.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Ghi runbook failure injection, restore/rollback và billing audit.",
+        "Chạy micro-lab an toàn `node labs/CF-039/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/testing/failure-drills.md` theo yêu cầu: Ghi runbook failure injection, restore/rollback và billing audit; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-039/README.md`."
+      ],
+      "deliverables": [
+        "docs/testing/failure-drills.md",
+        "evidence/CF-039/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/testing/failure-drills.md` tồn tại, chứa nội dung đặc thù về failure drills, security, cost review và recovery và được review.",
+        "Micro-lab `node labs/CF-039/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-039/README.md` và giải thích kết quả.",
+        "Không tạo tài nguyên cloud khi chưa có phê duyệt cụ thể và dự toán chi phí."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-039/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/testing/failure-drills.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m8",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Nhầm backup tồn tại với restore đã test. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Thiết kế drill Pub/Sub outage? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "review",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    },
+    {
+      "id": "CF-040",
+      "title": "Final acceptance, clean-room reproduction và portfolio",
+      "milestone": "M8",
+      "depends_on": [
+        "CF-039",
+        "CF-030"
+      ],
+      "learning_objectives": [
+        "Mô tả được lý do và trade-off của final acceptance, clean-room reproduction và portfolio.",
+        "Tạo được artifact có thể review: docs/portfolio.md.",
+        "Thiết kế và xác minh ít nhất một tình huống lỗi/biên liên quan."
+      ],
+      "steps": [
+        "Đọc docs/requirements.md và vấn đề cụ thể: Đối chiếu requirements-to-evidence, fresh clone walkthrough và demo script.",
+        "Chạy micro-lab an toàn `node labs/CF-040/demo.mjs`; giải thích assertion và kiểm tra output.",
+        "Tạo hoặc sửa `docs/portfolio.md` theo yêu cầu: Đối chiếu requirements-to-evidence, fresh clone walkthrough và demo script; không sao chép micro-lab thành giải pháp hoàn chỉnh.",
+        "Bổ sung một trường hợp sai/biên và lưu log hoặc review evidence vào `evidence/CF-040/README.md`."
+      ],
+      "deliverables": [
+        "docs/portfolio.md",
+        "evidence/CF-040/README.md"
+      ],
+      "acceptance_criteria": [
+        "Artifact `docs/portfolio.md` tồn tại, chứa nội dung đặc thù về final acceptance, clean-room reproduction và portfolio và được review.",
+        "Micro-lab `node labs/CF-040/demo.mjs` thoát với exit code 0.",
+        "Có tối thiểu một negative/boundary check ghi trong `evidence/CF-040/README.md` và giải thích kết quả.",
+        "Không tạo tài nguyên cloud khi chưa có phê duyệt cụ thể và dự toán chi phí."
+      ],
+      "verification": [
+        "Chạy `node labs/CF-040/demo.mjs` và lưu exit code.",
+        "Đối chiếu artifact `docs/portfolio.md` với yêu cầu, bổ sung test đặc thù trước khi đánh dấu verified."
+      ],
+      "estimated_hours": 4,
+      "labels": [
+        "milestone:m8",
+        "guided",
+        "draft/unverified"
+      ],
+      "knowledge": [
+        "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
+        "Tham khảo docs/architecture.md và ADR liên quan"
+      ],
+      "troubleshooting": [
+        "Rủi ro: Tuyên bố production-ready khi chưa kiểm chứng. Kiểm tra assumptions và đọc logs trước khi thay đổi hệ thống.",
+        "Nếu file prerequisite chưa tồn tại, hoàn thành dependency và kiểm tra đường dẫn trước khi chạy."
+      ],
+      "reflection": "Soạn trình bày 5 phút quyết định kiến trúc? Giải thích trade-off và một test phát hiện lỗi.",
+      "kind": "release",
+      "verification_status": "draft/unverified",
+      "verification_evidence": null
+    }
+  ],
+  "duration_weeks": 16,
+  "learning_mode": "guided",
+  "publication_status": "not_published"
+}

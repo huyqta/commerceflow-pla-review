@@ -94,8 +94,8 @@
       ],
       "reflection": "Giải thích vì sao một ứng dụng nhỏ không cần Microservices? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "foundations",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-001/README.md"
     },
     {
       "id": "CF-002",
@@ -144,8 +144,8 @@
       ],
       "reflection": "Mô tả cách kiểm chứng một lệnh chạy trên OS khác? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "environment",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-002/README.md"
     },
     {
       "id": "CF-003",

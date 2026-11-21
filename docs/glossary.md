@@ -212,3 +212,136 @@ Mọi acronym phải được giải nghĩa ở lần đầu xuất hiện trong
 **Ví dụ:** viewer không được xóa sản phẩm.  
 **Hiểu lầm phổ biến:** Tên gọi không thay thế acceptance test; phải diễn giải trường hợp dùng.
 
+---
+
+[ANSWER]
+# Chuyên đề Nền tảng: DDD, Clean Architecture, Microservices & GCP trong CommerceFlow
+
+## 1. Concept Map Kiến trúc Tổng thể
+
+Mối quan hệ giữa các khái niệm kiến trúc cốt lõi trong hệ thống CommerceFlow:
+
+```
++---------------------------------------------------------------------------------------+
+|                                GOOGLE CLOUD PLATFORM (GCP)                            |
+|                                                                                       |
+|  [React Frontend] --(HTTPS / OIDC)--> [Cloud Run: API Gateway]                        |
+|                                                |                                      |
+|                 +------------------------------+-------------------------------+      |
+|                 | (Authenticated Service-to-Service via IAM)                   |      |
+|                 v                                                              v      |
+|   +---------------------------+                                  +------------------+ |
+|   |  Ordering Microservice    |                                  | Inventory Service| |
+|   |  (Cloud Run + Cloud SQL)  |                                  | (Cloud Run + SQL)| |
+|   |                           |                                  |                  | |
+|   |  +---------------------+  |                                  |  +-------------+ | |
+|   |  | CLEAN ARCHITECTURE  |  |                                  |  | CLEAN ARCH. | | |
+|   |  |  +---------------+  |  |                                  |  +-------------+ | |
+|   |  |  | DOMAIN LAYER  |  |  |                                  |                  | |
+|   |  |  | - Order Root  |  |  |                                  |                  | |
+|   |  |  | - LineItem    |  |  |                                  |                  | |
+|   |  |  | - PricingServ |  |  |                                  |                  | |
+|   |  |  +---------------+  |  |                                  |                  | |
+|   |  |         ^           |  |                                  |                  | |
+|   |  |  +---------------+  |  |                                  |                  | |
+|   |  |  | APPLICATION   |  |  |                                  |                  | |
+|   |  |  | - CreateOrder |  |  |                                  |                  | |
+|   |  |  +---------------+  |  |                                  |                  | |
+|   |  |         ^           |  |                                  |                  | |
+|   |  |  +---------------+  |  |                                  |                  | |
+|   |  |  | INFRASTRUCTURE|  |  |                                  |                  | |
+|   |  |  | - Prisma Repo |  |  |                                  |                  | |
+|   |  |  | - Outbox Pub  |  |  |                                  |                  | |
+|   |  |  +---------------+  |  |                                  |                  | |
+|   |  +---------------------+  |                                  |                  | |
+|   +-------------+-------------+                                  +--------+---------+ |
+|                 | (Publish OrderCreated)                                  ^           |
+|                 v                                                         |           |
+|         +-----------------------------------------------------------------+           |
+|         |                     Cloud Pub/Sub (Event Bus)                   |           |
+|         +-----------------------------------------------------------------+           |
++---------------------------------------------------------------------------------------+
+```
+
+---
+
+## 2. Phân biệt Aggregate với Service trong Domain-Driven Design (DDD)
+
+Để tránh thiết kế mô hình nghèo nàn (Anemic Domain Model) hoặc vi phạm ranh giới bao gói, CommerceFlow phân biệt rõ 3 khái niệm:
+
+### A. Aggregate (và Aggregate Root)
+- **Định nghĩa:** Là một cụm (cluster) các Entity và Value Object liên kết chặt chẽ với nhau, được đối xử như một đơn vị nguyên tử duy nhất khi thay đổi dữ liệu. Aggregate Root là điểm truy cập duy nhất vào cụm này từ bên ngoài.
+- **Trách nhiệm cốt lõi:**
+  - Bảo vệ **Business Invariants** (các quy tắc nghiệp vụ bất biến phải luôn đúng tại mọi thời điểm).
+  - Ranh giới của Transaction: Một transaction tại một thời điểm chỉ được phép sửa đổi trạng thái của duy nhất một Aggregate Root.
+- **Ví dụ trong CommerceFlow:**
+  - `Order` (Aggregate Root) chứa danh sách các `OrderLineItem` (Entity con) và `Money` (Value Object).
+  - *Invariant bảo vệ:* Không thể xác nhận đơn (`confirm()`) nếu đơn chưa ở trạng thái `RESERVED`; tổng giá trị đơn phải khớp với tổng giá từng dòng; số lượng mặt hàng đặt phải > 0.
+  - Bên ngoài không được truy cập hay sửa trực tiếp `OrderLineItem`, mọi thao tác phải thông qua phương thức nghiệp vụ của `Order` (`order.addItem(...)`, `order.cancel(...)`).
+
+### B. Domain Service
+- **Định nghĩa:** Là một dịch vụ nghiệp vụ thuần túy (stateless) nằm trong tầng Domain, chỉ xuất hiện khi một logic nghiệp vụ quan trọng không thể gán tự nhiên cho một Entity hay Value Object nào, hoặc logic đó cần tương tác đồng thời giữa nhiều Aggregate mà không muốn phá vỡ tính bao gói.
+- **Trách nhiệm cốt lõi:**
+  - Chứa logic nghiệp vụ cốt lõi, hoàn toàn không phụ thuộc vào hạ tầng (không import DB, HTTP, Framework).
+- **Ví dụ trong CommerceFlow:**
+  - `OrderPricingDomainService`: Tính toán giá cuối cùng của đơn hàng khi có chính sách chiết khấu động phức tạp cần đối chiếu dữ liệu giữa hạn mức khách hàng và danh sách mặt hàng của đơn.
+
+### C. Application Service (Use Case)
+- **Định nghĩa:** Là lớp điều phối (orchestrator) nằm ở tầng Application, đóng vai trò cầu nối giữa thế giới bên ngoài (Controllers, Message Listeners) và tầng Domain.
+- **Trách nhiệm cốt lõi:**
+  - **Không chứa business rules**.
+  - Nhận DTO từ controller/adapter, mở transaction, gọi Repository để nạp Aggregate lên bộ nhớ.
+  - Ra lệnh cho Aggregate hoặc Domain Service thực thi nghiệp vụ.
+  - Lưu Aggregate đã thay đổi xuống database qua Repository và phát sinh Event (hoặc ghi vào Outbox).
+- **Ví dụ trong CommerceFlow:**
+  - `CreateOrderUseCase`:
+    1. Nhận `CreateOrderDto`.
+    2. Gọi `orderRepo.nextIdentity()` để sinh mã.
+    3. Tạo thực thể `Order.create(...)`.
+    4. Lưu vào Database qua `orderRepo.save(order)`.
+    5. Ghi Outbox message để phát tán `OrderPlacedIntegrationEvent`.
+
+---
+
+## 3. Clean Architecture & Trật tự Phụ thuộc (Dependency Inversion)
+
+Hệ thống áp dụng nghiêm ngặt nguyên tắc **Dependency Rule**: Luồng phụ thuộc mã nguồn chỉ hướng từ ngoài vào trong:
+
+1. **Domain Layer (Trong cùng):**
+   - Chứa Entities, Value Objects, Domain Events, Domain Services, và Repository Interfaces (Ports).
+   - *Nguyên tắc vàng:* Không có bất kỳ dependency nào vào thư viện bên ngoài (không NestJS, không Prisma, không Express, không GCP SDK).
+2. **Application Layer:**
+   - Chứa Use Cases, DTOs, Command/Query Handlers, Outbox Service Interfaces.
+   - Chỉ phụ thuộc vào Domain Layer.
+3. **Infrastructure & Presentation Adapters (Ngoài cùng):**
+   - Controllers, REST endpoints, Prisma Repositories, Pub/Sub Publisher/Subscriber, Cloud SQL, Secret Manager.
+   - Triển khai (implement) các Interfaces do Domain và Application định nghĩa.
+
+---
+
+## 4. Microservices & Tích hợp Google Cloud Platform (GCP)
+
+- **Chia dịch vụ:** Chia theo Bounded Context: `Catalog`, `Ordering`, `Inventory`, `Payments`. Mỗi dịch vụ có database schema độc lập (Database-per-service).
+- **Giao tiếp liên dịch vụ:**
+  - Đồng bộ (Chỉ dùng khi bắt buộc): REST/gRPC qua Cloud Run private service URL có xác thực IAM Service Account OIDC token.
+  - Bất đồng bộ (Mặc định cho nghiệp vụ): Cloud Pub/Sub thông qua mẫu thiết kế **Transactional Outbox** để đảm bảo không bị dual-write rớt message.
+- **Bảo mật và Danh tính:**
+  - Người dùng xác thực qua OIDC/JWT; phân quyền Role-Based Access Control (RBAC).
+  - Service Account tuân thủ nguyên tắc quyền tối thiểu (Least Privilege); Secret Manager lưu giữ database credentials và signing keys an toàn.
+
+---
+
+## 5. Phân biệt Domain Event và Integration Event
+
+- **Domain Event (Sự kiện Miền):**
+  - **Phạm vi & Vòng đời:** Diễn ra và được tiêu thụ cục bộ bên trong một Bounded Context (in-process).
+  - **Mục đích:** Đồng bộ trạng thái hoặc kích hoạt side-effects nội bộ (ví dụ: `OrderCreatedDomainEvent` kích hoạt ghi bản ghi Outbox trong cùng transaction database).
+  - **Đặc trưng:** Chứa thông tin chi tiết của mô hình nghiệp vụ nội bộ, không lộ ra ngoài service.
+
+- **Integration Event (Sự kiện Tích hợp):**
+  - **Phạm vi & Vòng đời:** Được xuất bản ra bên ngoài service thông qua Message Broker (Google Cloud Pub/Sub) để các service khác cùng tiêu thụ.
+  - **Mục đích:** Giao tiếp bất đồng bộ giữa các Microservices (ví dụ: `OrderPlacedIntegrationEvent` báo cho Inventory Service để reserve tồn kho).
+  - **Đặc trưng:** Schema phiên bản hóa ổn định, mang payload tối giản, tránh phụ thuộc chặt (tight coupling) vào cấu trúc dữ liệu nội bộ.
+
+
+

@@ -194,8 +194,8 @@
       ],
       "reflection": "Thêm kịch bản đơn hàng có 2 sản phẩm? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "lab",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-003/README.md"
     },
     {
       "id": "CF-004",
@@ -244,8 +244,8 @@
       ],
       "reflection": "Vẽ luồng InventoryReserved được sinh ra ở đâu? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "lab",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-004/README.md"
     },
     {
       "id": "CF-005",
@@ -294,8 +294,8 @@
       ],
       "reflection": "Nêu hai trường hợp không nên tách service? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "review",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-005/README.md"
     },
     {
       "id": "CF-006",
@@ -344,8 +344,8 @@
       ],
       "reflection": "Thêm invariant không cho đặt quantity bằng 0? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-006/README.md"
     },
     {
       "id": "CF-007",
@@ -394,8 +394,8 @@
       ],
       "reflection": "Vẽ event lifecycle khi fail DB commit? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-007/README.md"
     },
     {
       "id": "CF-008",
@@ -444,8 +444,8 @@
       ],
       "reflection": "Thay in-memory adapter bằng fake có lỗi? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-008/README.md"
     },
     {
       "id": "CF-009",
@@ -494,8 +494,8 @@
       ],
       "reflection": "So sánh command với query? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-009/README.md"
     },
     {
       "id": "CF-010",
@@ -544,8 +544,8 @@
       ],
       "reflection": "Thêm invariant trùng order item? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "review",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-010/README.md"
     },
     {
       "id": "CF-011",
@@ -594,8 +594,8 @@
       ],
       "reflection": "Thêm health route không cần DB? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-011/README.md"
     },
     {
       "id": "CF-012",
@@ -644,8 +644,8 @@
       ],
       "reflection": "Viết SQL unique constraint cho orderId? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-012/README.md"
     },
     {
       "id": "CF-013",
@@ -694,8 +694,8 @@
       ],
       "reflection": "Thiết kế negative test cho giá âm? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-013/README.md"
     },
     {
       "id": "CF-014",
@@ -744,8 +744,8 @@
       ],
       "reflection": "Mô phỏng hai đơn cùng giữ món cuối? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-014/README.md"
     },
     {
       "id": "CF-015",
@@ -794,8 +794,8 @@
       ],
       "reflection": "Kiểm tra state machine cancel sau confirm? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-015/README.md"
     },
     {
       "id": "CF-016",

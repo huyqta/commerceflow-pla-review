@@ -7,6 +7,7 @@ import http from 'node:http';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   CreateOrderUseCase,
   GetOrderByIdQueryHandler,
@@ -449,6 +450,13 @@ export class InventoryModule {
   }
 }
 
+export interface ChaosState {
+  catalog: boolean;
+  inventory: boolean;
+  payment: boolean;
+  ordering: boolean;
+}
+
 export class OrderingModule {
   public readonly orderRepository: InMemoryOrderRepository;
   public readonly unitOfWork: InMemoryUnitOfWork;
@@ -458,7 +466,11 @@ export class OrderingModule {
   public readonly placeOrderController: PlaceOrderController;
   public readonly paymentSimulator: PaymentSimulatorPortAdapter;
 
-  constructor(catalogModule: CatalogModule, inventoryModule: InventoryModule) {
+  constructor(
+    catalogModule: CatalogModule,
+    inventoryModule: InventoryModule,
+    getChaosState: () => ChaosState = () => ({ catalog: true, inventory: true, payment: true, ordering: true })
+  ) {
     this.orderRepository = new InMemoryOrderRepository();
     this.unitOfWork = new InMemoryUnitOfWork();
     this.createOrderUseCase = new CreateOrderUseCase(this.orderRepository, this.unitOfWork);
@@ -467,6 +479,12 @@ export class OrderingModule {
     // Catalog Query Port nối với CatalogModule Repository
     const catalogPort = {
       findProductByIdOrSku: async (id: string) => {
+        if (!getChaosState().catalog) {
+          throw new OrderLifecycleError(
+            'CATALOG_SERVICE_UNAVAILABLE: Dịch vụ Catalog đang tạm ngắt kết nối (503)',
+            'SERVICE_UNAVAILABLE'
+          );
+        }
         if (!id || typeof id !== 'string') return null;
         const item = (await catalogModule.repository.findById(id)) || (await catalogModule.repository.findBySku(id));
         if (!item) return null;
@@ -482,8 +500,18 @@ export class OrderingModule {
 
     // Inventory Reservation Port nối với InventoryModule UseCases
     const inventoryPort = {
-      reserveStock: (cmd: any) => inventoryModule.reserveStockUseCase.execute(cmd),
-      releaseStock: (cmd: any) => inventoryModule.releaseStockUseCase.execute(cmd),
+      reserveStock: async (cmd: any) => {
+        if (!getChaosState().inventory) {
+          return {
+            success: false,
+            reason: 'INVENTORY_SERVICE_UNAVAILABLE: Dịch vụ Tồn kho đang tạm ngắt kết nối (503 Service Unavailable)',
+          };
+        }
+        return inventoryModule.reserveStockUseCase.execute(cmd);
+      },
+      releaseStock: async (cmd: any) => {
+        return inventoryModule.releaseStockUseCase.execute(cmd);
+      },
     };
 
     this.paymentSimulator = new PaymentSimulatorPortAdapter(false);
@@ -504,13 +532,19 @@ export class AppModule {
   public readonly catalogModule: CatalogModule;
   public readonly inventoryModule: InventoryModule;
   public readonly orderingModule: OrderingModule;
+  public readonly chaosState: ChaosState = {
+    catalog: true,
+    inventory: true,
+    payment: true,
+    ordering: true,
+  };
 
   constructor(config: AppConfig) {
     this.config = config;
     this.healthModule = new HealthModule(config);
     this.catalogModule = new CatalogModule();
     this.inventoryModule = new InventoryModule();
-    this.orderingModule = new OrderingModule(this.catalogModule, this.inventoryModule);
+    this.orderingModule = new OrderingModule(this.catalogModule, this.inventoryModule, () => this.chaosState);
   }
 
   public static forRoot(env: NodeJS.ProcessEnv = process.env): AppModule {
@@ -582,15 +616,30 @@ export class NestApplication {
         url === '/saga' ||
         url === '/ui')
     ) {
-      const htmlPath = path.resolve(process.cwd(), 'apps/web/public/index.html');
-      if (fs.existsSync(htmlPath)) {
-        const html = fs.readFileSync(htmlPath, 'utf8');
-        return {
-          status: 200,
-          body: html,
-          contentType: 'text/html',
-        };
+      const currentDir = path.dirname(fileURLToPath(import.meta.url));
+      const candidatePaths = [
+        path.resolve(currentDir, '../../web/public/index.html'),
+        path.resolve(process.cwd(), 'apps/web/public/index.html'),
+        path.resolve(process.cwd(), 'public/index.html'),
+        path.resolve(process.cwd(), 'index.html'),
+      ];
+
+      for (const p of candidatePaths) {
+        if (fs.existsSync(p)) {
+          const html = fs.readFileSync(p, 'utf8');
+          return {
+            status: 200,
+            body: html,
+            contentType: 'text/html; charset=utf-8',
+          };
+        }
       }
+
+      return {
+        status: 200,
+        body: '<h1>CommerceFlow Platform</h1><p>index.html not found. Checked: ' + candidatePaths.join(', ') + '</p>',
+        contentType: 'text/html; charset=utf-8',
+      };
     }
 
     // 1. Health routes (Công khai)
@@ -625,6 +674,56 @@ export class NestApplication {
       return {
         status: 200,
         body: OPENAPI_SPEC,
+      };
+    }
+
+    // 2.1. Chaos Engineering & Fault Injection Routes
+    if (url === `${prefix}/chaos/status` && method === 'GET') {
+      return { status: 200, body: this.appModule.chaosState };
+    }
+
+    if (url === `${prefix}/chaos/toggle` && method === 'POST') {
+      const { service, enabled } = (body as any) || {};
+      if (service && service in this.appModule.chaosState) {
+        (this.appModule.chaosState as any)[service] = Boolean(enabled);
+        if (service === 'payment') {
+          this.appModule.orderingModule.paymentSimulator.setSimulateFailure(!enabled);
+        }
+      }
+      return { status: 200, body: this.appModule.chaosState };
+    }
+
+    // 2.2. Kiểm tra trạng thái khả dụng của các vi dịch vụ (Fault Gates)
+    if (!this.appModule.chaosState.catalog && (url === `${prefix}/products` || url.startsWith(`${prefix}/products/`))) {
+      return {
+        status: 503,
+        body: {
+          statusCode: 503,
+          errorCode: 'CATALOG_SERVICE_DOWN',
+          message: 'SERVICE_UNAVAILABLE: Dịch vụ Catalog đang tạm ngắt kết nối (Simulated Crash)',
+        },
+      };
+    }
+
+    if (!this.appModule.chaosState.inventory && (url === `${prefix}/inventory` || url.startsWith(`${prefix}/inventory/`))) {
+      return {
+        status: 503,
+        body: {
+          statusCode: 503,
+          errorCode: 'INVENTORY_SERVICE_DOWN',
+          message: 'SERVICE_UNAVAILABLE: Dịch vụ Tồn kho đang tạm ngắt kết nối (Simulated Crash)',
+        },
+      };
+    }
+
+    if (!this.appModule.chaosState.ordering && (url === `${prefix}/orders` || url.startsWith(`${prefix}/orders/`))) {
+      return {
+        status: 503,
+        body: {
+          statusCode: 503,
+          errorCode: 'ORDERING_SERVICE_DOWN',
+          message: 'SERVICE_UNAVAILABLE: Dịch vụ Đặt hàng đang tạm ngắt kết nối (Simulated Crash)',
+        },
       };
     }
 

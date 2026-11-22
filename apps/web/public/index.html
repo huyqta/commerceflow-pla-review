@@ -79,7 +79,7 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
       flex-wrap: wrap;
     }
 
@@ -269,12 +269,6 @@
       background: rgba(59, 130, 246, 0.06);
     }
 
-    .scenario-card.active-scenario {
-      border-color: var(--accent);
-      background: rgba(59, 130, 246, 0.12);
-      box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);
-    }
-
     .scenario-badge {
       display: inline-block;
       font-size: 0.75rem;
@@ -333,22 +327,12 @@
       transition: all 0.2s ease;
     }
 
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--accent-hover);
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-    }
-
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); }
     .btn-success { background: var(--success); color: white; }
     .btn-success:hover { background: #059669; }
-
     .btn-danger { background: var(--danger); color: white; }
     .btn-danger:hover { background: #dc2626; }
-
     .btn-warning { background: var(--warning); color: #0f172a; }
     .btn-warning:hover { background: #d97706; }
 
@@ -557,6 +541,7 @@
     .tag-step { background: #312e81; color: #c4b5fd; }
     .tag-error { background: #7f1d1d; color: #fca5a5; }
     .tag-ok { background: #064e3b; color: #6ee7b7; }
+    .tag-chaos { background: #7c2d12; color: #fdba74; }
 
     /* Footer */
     footer {
@@ -615,6 +600,15 @@
         </div>
 
         <button class="btn btn-outline btn-sm" onclick="showJwtInfo()">🔑 Xem Token JWT</button>
+
+        <!-- Service Quick Toggle Badges in Header -->
+        <div style="display: flex; gap: 0.35rem; align-items: center; background: rgba(15, 23, 42, 0.7); padding: 0.2rem 0.5rem; border-radius: 8px; border: 1px solid var(--card-border); font-size: 0.75rem;">
+          <span style="color: #94a3b8; font-weight: 600;">Sập/Bật:</span>
+          <button id="pill-catalog" class="btn btn-sm btn-outline" style="padding: 0.15rem 0.4rem; font-size: 0.725rem; border-color: #10b981; color: #34d399;" onclick="toggleService('catalog')">CATALOG: ON 🟢</button>
+          <button id="pill-inventory" class="btn btn-sm btn-outline" style="padding: 0.15rem 0.4rem; font-size: 0.725rem; border-color: #10b981; color: #34d399;" onclick="toggleService('inventory')">INVENTORY: ON 🟢</button>
+          <button id="pill-payment" class="btn btn-sm btn-outline" style="padding: 0.15rem 0.4rem; font-size: 0.725rem; border-color: #10b981; color: #34d399;" onclick="toggleService('payment')">PAYMENT: ON 🟢</button>
+          <button id="pill-ordering" class="btn btn-sm btn-outline" style="padding: 0.15rem 0.4rem; font-size: 0.725rem; border-color: #10b981; color: #34d399;" onclick="toggleService('ordering')">ORDERING: ON 🟢</button>
+        </div>
       </div>
     </div>
   </header>
@@ -636,10 +630,88 @@
 
     <!-- ==================== TAB 1: SAGA & PROCESS VISUALIZER ==================== -->
     <div id="tab-saga" class="tab-pane active">
+
+      <!-- CHAOS & FAULT INJECTION CONTROL PANEL -->
+      <div class="card" style="margin-bottom: 1.5rem; border-color: rgba(239, 68, 68, 0.4); background: rgba(30, 41, 59, 0.9);">
+        <div class="card-header" style="border-bottom-color: rgba(239, 68, 68, 0.3);">
+          <div class="card-title" style="color: #f87171;">
+            ⚡ BẢNG ĐIỀU KHIỂN BƠM LỖI & THỬ NGHIỆM SẬP SERVICE (CHAOS ENGINEERING)
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="resetAllServices()">🔄 Khôi phục Tất Cả Service (Reset ON)</button>
+        </div>
+
+        <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1rem;">
+          Bấm <strong>TẮT DỊCH VỤ</strong> để mô phỏng sự cố sập container/pod và kiểm chứng tính năng chịu lỗi, bồi hoàn kho và bảo vệ tiền khách hàng:
+        </div>
+
+        <div class="grid-4" style="margin-bottom: 1rem;">
+          <!-- Catalog Card -->
+          <div style="background: #0f172a; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--card-border);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong>📦 Catalog Service</strong>
+              <span id="badge-catalog-state" class="scenario-badge badge-green">HOẠT ĐỘNG</span>
+            </div>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin: 0.4rem 0;">Quản lý danh mục & giá niêm yết</p>
+            <button id="btn-kill-catalog" class="btn btn-sm btn-danger" style="width: 100%;" onclick="toggleService('catalog')">TẮT DỊCH VỤ</button>
+          </div>
+
+          <!-- Inventory Card -->
+          <div style="background: #0f172a; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--card-border);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong>📊 Inventory Service</strong>
+              <span id="badge-inventory-state" class="scenario-badge badge-green">HOẠT ĐỘNG</span>
+            </div>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin: 0.4rem 0;">Quản lý tồn kho & Giữ chỗ (Reserve)</p>
+            <button id="btn-kill-inventory" class="btn btn-sm btn-danger" style="width: 100%;" onclick="toggleService('inventory')">TẮT DỊCH VỤ</button>
+          </div>
+
+          <!-- Payment Card -->
+          <div style="background: #0f172a; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--card-border);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong>💳 Payment Gateway</strong>
+              <span id="badge-payment-state" class="scenario-badge badge-green">HOẠT ĐỘNG</span>
+            </div>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin: 0.4rem 0;">Cổng trừ tiền tài khoản ngân hàng</p>
+            <button id="btn-kill-payment" class="btn btn-sm btn-danger" style="width: 100%;" onclick="toggleService('payment')">TẮT DỊCH VỤ</button>
+          </div>
+
+          <!-- Ordering Card -->
+          <div style="background: #0f172a; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--card-border);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong>🛒 Ordering Service</strong>
+              <span id="badge-ordering-state" class="scenario-badge badge-green">HOẠT ĐỘNG</span>
+            </div>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin: 0.4rem 0;">Saga Orchestrator điều phối</p>
+            <button id="btn-kill-ordering" class="btn btn-sm btn-danger" style="width: 100%;" onclick="toggleService('ordering')">TẮT DỊCH VỤ</button>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 0.75rem;">
+          <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.5rem; color: #fbbf24;">
+            🧪 Bấm 1-Click để chạy trực tiếp các kịch bản kiểm thử khi service bị sập:
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn-outline btn-sm" onclick="runChaosScenario('inventory_down')">
+              💥 1. Test khi Inventory Sập (Xem Retry & Anti-Charge)
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="runChaosScenario('payment_down')">
+              💥 2. Test khi Payment Sập (Xem Saga Bồi hoàn nhả kho)
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="runChaosScenario('catalog_down')">
+              💥 3. Test khi Catalog Sập (Xem Inventory vẫn sống độc lập)
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="runChaosScenario('ordering_down')">
+              💥 4. Test khi Ordering Sập (Từ chối đơn 503)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1-Click Standard Presets -->
       <div class="card" style="margin-bottom: 1.5rem;">
         <div class="card-header">
-          <div class="card-title">🚀 Chọn Kịch Bản Mẫu Để Thực Thi Ngay (1-Click Presets)</div>
-          <span style="font-size: 0.85rem; color: #94a3b8;">Kiểm thử trực quan thay vì chỉ đọc console unittest</span>
+          <div class="card-title">🚀 Các Kịch Bản Tiêu Chuẩn (1-Click Standard Presets)</div>
+          <span style="font-size: 0.85rem; color: #94a3b8;">Kiểm thử khi tất cả service đều hoạt động bình thường</span>
         </div>
 
         <div class="grid-4">
@@ -981,6 +1053,10 @@
                 <strong>4. Ordering Bounded Context & Saga Orchestrator</strong><br>
                 <span style="font-size: 0.8rem; color: #94a3b8;">Order Aggregate State Machine, Saga Orchestrator, Compensation Rollback, Outbox/Inbox Broker.</span>
               </div>
+              <div style="padding: 0.5rem; background: #1e293b; border-left: 4px solid #ec4899; margin-bottom: 0.5rem; border-radius: 4px;">
+                <strong>5. Payment Gateway Simulator (External Adapter)</strong><br>
+                <span style="font-size: 0.8rem; color: #94a3b8;">Mô phỏng cổng thanh toán đối tác thứ 3, hỗ trợ kiểm thử thành công, thất bại, và timeout.</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1041,6 +1117,7 @@
     let productsCache = [];
     let inventoryCache = [];
     let ordersCache = [];
+    let chaosState = { catalog: true, inventory: true, payment: true, ordering: true };
 
     // Helper: Sleep
     const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -1086,6 +1163,7 @@
     // Logging to Console
     function logEvent(type, message, payload = null) {
       const box = document.getElementById('eventConsole');
+      if (!box) return;
       const time = new Date().toLocaleTimeString();
       const div = document.createElement('div');
       div.className = 'console-entry';
@@ -1094,6 +1172,7 @@
       if (type === 'OK') tagClass = 'tag-ok';
       if (type === 'ERROR') tagClass = 'tag-error';
       if (type === 'STEP') tagClass = 'tag-step';
+      if (type === 'CHAOS') tagClass = 'tag-chaos';
 
       let payloadStr = '';
       if (payload) {
@@ -1109,16 +1188,131 @@
       document.getElementById('eventConsole').innerHTML = '';
     }
 
+    // ==================== CHAOS / FAULT INJECTION CONTROLS ====================
+    async function loadChaosState() {
+      try {
+        const res = await fetch('/api/v1/chaos/status');
+        if (res.ok) {
+          chaosState = await res.json();
+          updateChaosUI();
+        }
+      } catch (e) {
+        console.warn('Lỗi tải chaos state:', e);
+      }
+    }
+
+    async function toggleService(service) {
+      const newState = !chaosState[service];
+      try {
+        const res = await fetch('/api/v1/chaos/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ service, enabled: newState }),
+        });
+        if (res.ok) {
+          chaosState = await res.json();
+          updateChaosUI();
+          logEvent('CHAOS', `Đã ${newState ? 'BẬT (Khôi phục)' : 'TẮT (Gây sập)'} dịch vụ [${service.toUpperCase()}]`);
+          if (service === 'catalog') loadCatalog();
+          if (service === 'inventory') loadInventory();
+        }
+      } catch (e) {
+        console.error('Lỗi toggle service:', e);
+      }
+    }
+
+    async function resetAllServices() {
+      for (const s of ['catalog', 'inventory', 'payment', 'ordering']) {
+        await fetch('/api/v1/chaos/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ service: s, enabled: true }),
+        });
+      }
+      await loadChaosState();
+      logEvent('OK', 'Đã khôi phục toàn bộ vi dịch vụ về trạng thái BẬT (Healthy / Online)');
+      loadCatalog();
+      loadInventory();
+    }
+
+    function updateChaosUI() {
+      for (const [s, enabled] of Object.entries(chaosState)) {
+        // Header pills
+        const pill = document.getElementById(`pill-${s}`);
+        if (pill) {
+          pill.style.borderColor = enabled ? '#10b981' : '#ef4444';
+          pill.style.color = enabled ? '#34d399' : '#f87171';
+          pill.innerText = `${s.toUpperCase()}: ${enabled ? 'ON 🟢' : 'OFF 🔴'}`;
+        }
+
+        // Panel badges & buttons
+        const badge = document.getElementById(`badge-${s}-state`);
+        const btn = document.getElementById(`btn-kill-${s}`);
+        if (badge) {
+          badge.className = `scenario-badge ${enabled ? 'badge-green' : 'badge-red'}`;
+          badge.innerText = enabled ? 'HOẠT ĐỘNG' : 'ĐÃ SẬP (OFF)';
+        }
+        if (btn) {
+          btn.className = `btn btn-sm ${enabled ? 'btn-danger' : 'btn-success'}`;
+          btn.innerText = enabled ? 'TẮT DỊCH VỤ' : 'BẬT LẠI';
+        }
+      }
+    }
+
+    async function runChaosScenario(type) {
+      if (type === 'inventory_down') {
+        // Tắt inventory, bật các service khác
+        await fetch('/api/v1/chaos/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ service: 'inventory', enabled: false }) });
+        await fetch('/api/v1/chaos/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ service: 'payment', enabled: true }) });
+        await fetch('/api/v1/chaos/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ service: 'ordering', enabled: true }) });
+        await fetch('/api/v1/chaos/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ service: 'catalog', enabled: true }) });
+        await loadChaosState();
+
+        document.getElementById('sagaCustomerId').value = 'CUST-CHAOS-INV';
+        document.getElementById('sagaQuantity').value = 1;
+        logEvent('CHAOS', 'MÔ PHỎNG: Inventory Service đã bị TẮT! Đang chuẩn bị thực thi đơn hàng...');
+        executeSaga();
+      } else if (type === 'payment_down') {
+        // Bật inventory, tắt payment
+        await fetch('/api/v1/chaos/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ service: 'inventory', enabled: true }) });
+        await fetch('/api/v1/chaos/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ service: 'payment', enabled: false }) });
+        await fetch('/api/v1/chaos/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ service: 'ordering', enabled: true }) });
+        await fetch('/api/v1/chaos/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ service: 'catalog', enabled: true }) });
+        await loadChaosState();
+
+        document.getElementById('sagaCustomerId').value = 'CUST-CHAOS-PAY';
+        document.getElementById('sagaQuantity').value = 1;
+        logEvent('CHAOS', 'MÔ PHỎNG: Payment Gateway đã bị TẮT (Timeout)! Đang chuẩn bị thực thi đơn hàng để xem Bồi hoàn...');
+        executeSaga();
+      } else if (type === 'catalog_down') {
+        await fetch('/api/v1/chaos/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ service: 'catalog', enabled: false }) });
+        await loadChaosState();
+        logEvent('CHAOS', 'MÔ PHỎNG: Catalog Service đã bị TẮT! Chuyển sang Tab Catalog để thấy lỗi 503, nhưng Inventory vẫn hoạt động độc lập.');
+        switchTab('catalog');
+      } else if (type === 'ordering_down') {
+        await fetch('/api/v1/chaos/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ service: 'ordering', enabled: false }) });
+        await loadChaosState();
+        logEvent('CHAOS', 'MÔ PHỎNG: Ordering Service đã bị TẮT! Thử đặt hàng sẽ bị từ chối 503.');
+        executeSaga();
+      }
+    }
+
     // Load Catalog
     async function loadCatalog() {
+      const tbody = document.getElementById('catalogTableBody');
       try {
         const res = await fetch('/api/v1/products');
+        if (!res.ok) {
+          const err = await res.json();
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444; font-weight: 600;">⚠️ ${err.message || 'Catalog Service không khả dụng (503)'}</td></tr>`;
+          return;
+        }
         const data = await res.json();
         productsCache = Array.isArray(data) ? data : (data.items || []);
         renderCatalogTable(productsCache);
         populateProductSelect();
       } catch (err) {
-        console.error('Lỗi tải catalog:', err);
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444;">Không thể kết nối đến Catalog Service</td></tr>`;
       }
     }
 
@@ -1136,7 +1330,7 @@
             <div style="font-size: 0.75rem; color: #94a3b8;">${p.description || ''}</div>
           </td>
           <td><strong style="color: #34d399;">${Number(p.price).toLocaleString('vi-VN')} đ</strong></td>
-          <td>${p.stock || 0}</td>
+          <td>${p.stock || p.availableStock || 0}</td>
           <td>
             <button class="btn btn-outline btn-sm" onclick="quickSelectProduct('${p.id}')">Đặt mua</button>
           </td>
@@ -1155,6 +1349,7 @@
 
     function populateProductSelect() {
       const select = document.getElementById('sagaProductSelect');
+      if (!productsCache || productsCache.length === 0) return;
       select.innerHTML = productsCache.map(p => `
         <option value="${p.id}">${p.sku} - ${p.name} (${Number(p.price).toLocaleString('vi-VN')} đ)</option>
       `).join('');
@@ -1166,7 +1361,7 @@
       const prod = productsCache.find(p => p.id === select.value);
       const hint = document.getElementById('stockHint');
       if (prod) {
-        hint.innerHTML = `Tồn kho sẵn có: <strong>${prod.stock}</strong>`;
+        hint.innerHTML = `Tồn kho sẵn có: <strong>${prod.stock || prod.availableStock || 0}</strong>`;
       }
     }
 
@@ -1179,13 +1374,19 @@
 
     // Load Inventory
     async function loadInventory() {
+      const tbody = document.getElementById('inventoryTableBody');
       try {
         const res = await fetch('/api/v1/inventory');
+        if (!res.ok) {
+          const err = await res.json();
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444; font-weight: 600;">⚠️ ${err.message || 'Inventory Service không khả dụng (503)'}</td></tr>`;
+          return;
+        }
         const data = await res.json();
         inventoryCache = Array.isArray(data) ? data : [];
         renderInventoryTable(inventoryCache);
       } catch (err) {
-        console.error('Lỗi tải inventory:', err);
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444;">Không thể kết nối đến Inventory Service</td></tr>`;
       }
     }
 
@@ -1252,15 +1453,21 @@
 
     // Load Orders
     async function loadOrders() {
+      const tbody = document.getElementById('ordersTableBody');
       try {
         const res = await fetch('/api/v1/orders', {
           headers: { 'Authorization': `Bearer ${currentToken}` },
         });
+        if (!res.ok) {
+          const err = await res.json();
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444; font-weight: 600;">⚠️ ${err.message || 'Ordering Service không khả dụng (503)'}</td></tr>`;
+          return;
+        }
         const data = await res.json();
         ordersCache = Array.isArray(data) ? data : [];
         renderOrdersTable(ordersCache);
       } catch (err) {
-        console.error('Lỗi tải orders:', err);
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Không thể kết nối đến Ordering Service</td></tr>`;
       }
     }
 
@@ -1303,7 +1510,7 @@
         custInput.value = 'CUST-HAPPY-01';
         logEvent('SCENARIO', 'Đã nạp kịch bản R-01: Happy Path (Đơn hàng thành công)');
       } else if (type === 'out_of_stock') {
-        qtyInput.value = 9999; // Vượt quá tồn kho
+        qtyInput.value = 9999;
         paySelect.value = 'success';
         custInput.value = 'CUST-OOS-02';
         logEvent('SCENARIO', 'Đã nạp kịch bản R-02: Out of Stock (Số lượng 9999 cái)');
@@ -1334,7 +1541,7 @@
       document.getElementById('pipelineStatusText').innerText = 'Sẵn sàng';
     }
 
-    // EXECUTE SAGA STEP-BY-STEP (Trọng tâm trải nghiệm trực quan)
+    // EXECUTE SAGA STEP-BY-STEP (Trực quan hóa luồng xử lý và Bơm lỗi)
     async function executeSaga() {
       const btn = document.getElementById('runSagaBtn');
       btn.disabled = true;
@@ -1350,8 +1557,35 @@
       const startTime = performance.now();
       const orderId = `ord-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
 
+      // BƯỚC 0: KIỂM TRA SỰ SỐNG CÒN CỦA ORDERING VÀ CATALOG
+      if (!chaosState.ordering) {
+        logEvent('ERROR', 'LỖI SẬP: Ordering Service đang bị tắt (503 Service Unavailable)! Không thể tiếp nhận đơn hàng mới.');
+        const step1 = document.getElementById('step-1');
+        step1.className = 'pipeline-step step-failed';
+        document.getElementById('step-1-badge').className = 'step-status-badge badge-red';
+        document.getElementById('step-1-badge').innerText = 'ORDERING DOWN (503)';
+        document.getElementById('metricOrderStatus').innerText = 'REJECTED (503)';
+        document.getElementById('metricOrderStatus').style.color = '#ef4444';
+        document.getElementById('pipelineStatusText').innerText = 'Ordering Service bị sập -> Request bị từ chối';
+        finishSaga(startTime);
+        return;
+      }
+
+      if (!chaosState.catalog) {
+        logEvent('ERROR', 'LỖI SẬP: Catalog Service đang bị tắt (503 Service Unavailable)! Không thể tra cứu thông tin sản phẩm và giá niêm yết.');
+        const step1 = document.getElementById('step-1');
+        step1.className = 'pipeline-step step-failed';
+        document.getElementById('step-1-badge').className = 'step-status-badge badge-red';
+        document.getElementById('step-1-badge').innerText = 'CATALOG DOWN (503)';
+        document.getElementById('metricOrderStatus').innerText = 'REJECTED (503)';
+        document.getElementById('metricOrderStatus').style.color = '#ef4444';
+        document.getElementById('pipelineStatusText').innerText = 'Catalog Service bị sập -> Không thể tạo đơn';
+        finishSaga(startTime);
+        return;
+      }
+
       // STEP 1: INITIALIZE ORDER
-      document.getElementById('pipelineStatusText').innerText = 'Bước 1: Khởi tạo Đơn hàng...';
+      document.getElementById('pipelineStatusText').innerText = 'Bước 1: Khởi tạo Đơn hàng (Order Service)...';
       const step1 = document.getElementById('step-1');
       step1.className = 'pipeline-step step-running';
       document.getElementById('step-1-badge').innerText = 'CREATING...';
@@ -1372,18 +1606,66 @@
         orderId, customerId, items: [{ productId, quantity }]
       });
 
-      // STEP 2: INVENTORY RESERVATION
+      // STEP 2: INVENTORY RESERVATION & CHAOS TEST
       document.getElementById('pipelineStatusText').innerText = 'Bước 2: Inventory Service thực hiện giữ kho...';
       const step2 = document.getElementById('step-2');
       step2.className = 'pipeline-step step-running';
       document.getElementById('step-2-badge').innerText = 'CHECKING STOCK...';
 
-      logEvent('STEP', `[Bước 2/4] Gọi InventoryReservationPort -> Kiểm tra tồn kho khả dụng cho ${productId}...`);
+      logEvent('STEP', `[Bước 2/4] Gọi InventoryReservationPort -> Gửi yêu cầu giữ ${quantity} sản phẩm ${productId}...`);
       await sleep(delay);
+
+      // KIỂM TRA NẾU INVENTORY SERVICE BỊ SẬP (CHAOS SCENARIO)
+      if (!chaosState.inventory) {
+        step2.className = 'pipeline-step step-failed';
+        document.getElementById('step-2-badge').className = 'step-status-badge badge-red';
+        document.getElementById('step-2-badge').innerText = 'INVENTORY DOWN (503)';
+
+        logEvent('ERROR', `SẬP DỊCH VỤ: Inventory Service ngắt kết nối (503 Service Unavailable) khi gọi giữ kho cho [${productId}]!`);
+
+        // Mô phỏng Retry với Bounded Exponential Backoff + Jitter
+        logEvent('STEP', `[Resilience] Kích hoạt Exponential Backoff: Thử lại lần 1 (100ms + Jitter)...`);
+        await sleep(Math.min(delay, 250));
+        logEvent('STEP', `[Resilience] Thử lại lần 2 (200ms + Jitter)... Không phản hồi!`);
+        await sleep(Math.min(delay, 350));
+        logEvent('STEP', `[Resilience] Thử lại lần 3 (400ms + Jitter)... Chạm ngưỡng MaxAttempts (3 lần)!`);
+        await sleep(Math.min(delay, 450));
+
+        // Nguyên tắc Anti-charge Invariant
+        logEvent('ERROR', `🛡️ NGUYÊN TẮC BẢO VỆ: CHƯA GIỮ ĐƯỢC KHO THÌ TUYỆT ĐỐI KHÔNG TRỪ TIỀN KHÁCH HÀNG!`);
+        logEvent('STEP', `[Bước 3/4] BỎ QUA HOÀN TOÀN BƯỚC THANH TOÁN (Anti-charge Invariant)!`);
+
+        const step3 = document.getElementById('step-3');
+        step3.className = 'pipeline-step step-idle';
+        document.getElementById('step-3-badge').className = 'step-status-badge badge-blue';
+        document.getElementById('step-3-badge').innerText = 'SKIPPED (Bảo vệ tiền)';
+
+        // Step 4: Chuyển TIMEOUT / REJECTED và đẩy DLQ
+        const step4 = document.getElementById('step-4');
+        step4.className = 'pipeline-step step-failed';
+        document.getElementById('step-4-badge').className = 'step-status-badge badge-red';
+        document.getElementById('step-4-badge').innerText = 'TIMEOUT / REJECTED';
+
+        document.getElementById('metricOrderStatus').innerText = 'TIMEOUT (REJECTED)';
+        document.getElementById('metricOrderStatus').style.color = '#ef4444';
+        document.getElementById('metricCurrentStep').innerText = 'INVENTORY_FAILED';
+        document.getElementById('metricStockReserved').innerText = 'false';
+        document.getElementById('metricPaymentCharged').innerText = 'false (AN TOÀN)';
+        document.getElementById('pipelineStatusText').innerText = 'Inventory bị sập -> Đơn chuyển TIMEOUT/REJECTED, tiền an toàn';
+
+        logEvent('EVENT', `DeadLetterQueue: Đẩy sự kiện [order.failed] vào DLQ để đội ngũ vận hành đối soát`, {
+          orderId,
+          reason: 'INVENTORY_SERVICE_UNAVAILABLE_MAX_RETRIES_EXCEEDED',
+          attemptCount: 3,
+        });
+
+        finishSaga(startTime);
+        return;
+      }
 
       // Check current stock in cache or simulate
       const prod = productsCache.find(p => p.id === productId);
-      const isOutOfStock = (quantity > 1000) || (prod && prod.stock < quantity);
+      const isOutOfStock = (quantity > 1000) || (prod && (prod.stock || prod.availableStock || 0) < quantity);
 
       if (isOutOfStock) {
         // SCENARIO R-02: OUT OF STOCK
@@ -1391,7 +1673,7 @@
         document.getElementById('step-2-badge').className = 'step-status-badge badge-red';
         document.getElementById('step-2-badge').innerText = 'OUT_OF_STOCK';
 
-        logEvent('ERROR', `HẾT HÀNG: Sản phẩm '${productId}' không đủ tồn kho khả dụng (Yêu cầu: ${quantity}, Hiện có: ${prod?.stock || 0})`);
+        logEvent('ERROR', `HẾT HÀNG: Sản phẩm '${productId}' không đủ tồn kho khả dụng (Yêu cầu: ${quantity})`);
         logEvent('EVENT', `DomainEvent: StockReservationFailedDomainEvent [inventory.failed.v1]`);
 
         // Skip step 3
@@ -1430,7 +1712,7 @@
         orderId, productId, quantityReserved: quantity
       });
 
-      // STEP 3: PAYMENT
+      // STEP 3: PAYMENT & PAYMENT SẬP TEST
       document.getElementById('pipelineStatusText').innerText = 'Bước 3: Gửi yêu cầu trừ tiền cổng thanh toán...';
       const step3 = document.getElementById('step-3');
       step3.className = 'pipeline-step step-running';
@@ -1439,15 +1721,17 @@
       logEvent('STEP', `[Bước 3/4] Gọi PaymentPort -> Gửi lệnh trừ tiền qua Payment Gateway Adapter...`);
       await sleep(delay);
 
-      if (paymentOutcome === 'failed' || paymentOutcome === 'timeout') {
-        // SCENARIO R-03 or R-05: PAYMENT FAILED -> COMPENSATION
+      const isPaymentFailed = (paymentOutcome === 'failed' || paymentOutcome === 'timeout' || !chaosState.payment);
+
+      if (isPaymentFailed) {
+        // SCENARIO R-03: PAYMENT FAILED / TIMEOUT / CRASH -> COMPENSATION
         step3.className = 'pipeline-step step-failed';
         document.getElementById('step-3-badge').className = 'step-status-badge badge-red';
-        document.getElementById('step-3-badge').innerText = paymentOutcome === 'timeout' ? 'TIMED_OUT' : 'DECLINED';
+        document.getElementById('step-3-badge').innerText = (!chaosState.payment || paymentOutcome === 'timeout') ? 'GATEWAY DOWN (504)' : 'DECLINED (402)';
 
-        logEvent('ERROR', paymentOutcome === 'timeout'
-          ? 'CỔNG THANH TOÁN TIMEOUT: Không nhận được phản hồi sau thời gian chờ!'
-          : 'THẺ BỊ TỪ CHỐI: Ngân hàng báo số dư không đủ hoặc thẻ bị khóa!');
+        logEvent('ERROR', !chaosState.payment
+          ? 'CỔNG THANH TOÁN BỊ SẬP (504 Gateway Timeout): Mất kết nối đến Payment Gateway!'
+          : (paymentOutcome === 'timeout' ? 'CỔNG THANH TOÁN TIMEOUT: Quá thời gian chờ phản hồi!' : 'THẺ BỊ TỪ CHỐI: Thẻ không đủ tiền!'));
 
         logEvent('EVENT', `DomainEvent: PaymentFailedDomainEvent [payment.failed.v1]`);
 
@@ -1459,9 +1743,9 @@
         document.getElementById('step-4-badge').innerText = 'COMPENSATING...';
 
         document.getElementById('compensationAlert').classList.add('show');
-        document.getElementById('compReasonText').innerText = `Lý do: ${paymentOutcome === 'timeout' ? 'Payment Gateway Timeout' : 'Thẻ bị từ chối'} -> Orchestrator tự động hoàn trả ${quantity} sản phẩm vào kho khả dụng!`;
+        document.getElementById('compReasonText').innerText = `Lý do: Cổng thanh toán ${!chaosState.payment ? 'bị sập' : 'gặp sự cố'} -> Saga Orchestrator tự động kích hoạt Release để hoàn trả ${quantity} sản phẩm lại kho!`;
 
-        logEvent('STEP', `[Bước 4/4 - BỒI HOÀN] Orchestrator gọi inventoryPort.releaseStock() để giải phóng ${quantity} đơn vị tồn kho...`);
+        logEvent('STEP', `[Bước 4/4 - BỒI HOÀN] Gọi inventoryPort.releaseStock() để bồi hoàn ${quantity} sản phẩm...`);
         await sleep(delay);
 
         step4.className = 'pipeline-step step-failed';
@@ -1478,7 +1762,7 @@
         logEvent('EVENT', `IntegrationEvent: StockReleasedIntegrationEvent [inventory.released.v1]`, {
           orderId, productId, releasedQuantity: quantity
         });
-        logEvent('OK', `SAGA HOÀN TẤT BỒI HOÀN: Đơn hàng [${orderId}] chuyển sang [CANCELLED]. Dữ liệu nhất quán hoàn toàn!`);
+        logEvent('OK', `SAGA BỒI HOÀN THÀNH CÔNG: Kho hàng đã được hoàn trả an toàn, đơn hàng chuyển sang [CANCELLED].`);
 
         finishSaga(startTime);
         return;
@@ -1642,6 +1926,7 @@
     // Initialize on page load
     window.addEventListener('DOMContentLoaded', async () => {
       await changeRole();
+      await loadChaosState();
       await loadCatalog();
       await loadInventory();
       await loadOrders();
@@ -1650,4 +1935,3 @@
   </script>
 </body>
 </html>
-

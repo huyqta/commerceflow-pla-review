@@ -83,6 +83,13 @@ export class InMemoryOrderRepository implements OrderRepository {
   }
 
   /**
+   * Lấy toàn bộ danh sách đơn hàng
+   */
+  public async findAll(): Promise<Order[]> {
+    return Array.from(this.storage.values());
+  }
+
+  /**
    * Tìm tất cả Order của một khách hàng.
    */
   public async findByCustomerId(customerId: string): Promise<Order[]> {

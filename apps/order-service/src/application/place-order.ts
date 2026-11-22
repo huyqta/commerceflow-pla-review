@@ -237,11 +237,16 @@ export class PlaceOrderUseCase {
     const reservationId = reserveResult.reservationId || '';
 
     // 5. Kịch bản Thanh toán (Payment Charging)
-    const paymentResult = await this.paymentPort.processPayment({
-      orderId: order.id,
-      customerId: order.customerId,
-      amount: order.getTotalAmount(),
-    });
+    const paymentResult = command.simulatePaymentFail
+      ? {
+          success: false,
+          error: 'PAYMENT_SIMULATOR_FAILED: Thẻ tín dụng bị từ chối hoặc cổng thanh toán gián đoạn',
+        }
+      : await this.paymentPort.processPayment({
+          orderId: order.id,
+          customerId: order.customerId,
+          amount: order.getTotalAmount(),
+        });
 
     if (!paymentResult.success) {
       // Kịch bản R-03: THANH TOÁN LỖI -> SAGA COMPENSATION

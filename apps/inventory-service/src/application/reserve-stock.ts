@@ -141,6 +141,10 @@ export class InMemoryInventoryRepository implements InventoryRepository {
     return s ? { ...s } : null;
   }
 
+  public async getAllStocks(): Promise<InventoryStock[]> {
+    return Array.from(this.stocks.values()).map(s => ({ ...s }));
+  }
+
   public async setStock(stock: InventoryStock): Promise<void> {
     this.stocks.set(stock.productId, { ...stock });
   }

@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CommerceFlow Platform - Trực quan hóa Hệ thống & Quy trình Saga</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius: 12px;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --mono: 'JetBrains Mono', Consolas, Monaco, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0.85rem 1.5rem;
+    }
+
+    .header-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      font-weight: 800;
+      font-size: 1.1rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .brand h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #60a5fa, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.825rem;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    .role-switcher {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #0f172a;
+      padding: 0.25rem 0.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      font-size: 0.85rem;
+    }
+
+    .role-switcher select {
+      background: transparent;
+      border: none;
+      color: #60a5fa;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .role-switcher select option {
+      background: #1e293b;
+      color: #f8fafc;
+    }
+
+    /* Navigation Bar */
+    nav {
+      background: #1e293b;
+      border-bottom: 1px solid var(--card-border);
+      padding: 0 1.5rem;
+    }
+
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-btn {
+      padding: 0.85rem 1.25rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.925rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .nav-btn.active {
+      color: #60a5fa;
+      border-bottom-color: #60a5fa;
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1400px;
+      width: 100%;
+      margin: 1.5rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards & Layout */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Scenario Buttons */
+    .scenario-card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scenario-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      background: rgba(59, 130, 246, 0.06);
+    }
+
+    .scenario-card.active-scenario {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.12);
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);
+    }
+
+    .scenario-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    .badge-green { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .badge-yellow { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-blue { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .form-control {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-success { background: var(--success); color: white; }
+    .btn-success:hover { background: #059669; }
+
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { background: #dc2626; }
+
+    .btn-warning { background: var(--warning); color: #0f172a; }
+    .btn-warning:hover { background: #d97706; }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--text-muted);
+    }
+
+    .btn-sm {
+      padding: 0.35rem 0.65rem;
+      font-size: 0.8rem;
+    }
+
+    /* Pipeline / Process Visualizer */
+    .pipeline-container {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin: 1.25rem 0;
+      position: relative;
+    }
+
+    .pipeline-steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      gap: 1rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    .pipeline-step {
+      flex: 1;
+      min-width: 220px;
+      background: #1e293b;
+      border: 2px solid var(--card-border);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+      position: relative;
+      transition: all 0.3s ease;
+      z-index: 2;
+    }
+
+    .pipeline-step.step-idle {
+      border-color: #334155;
+      opacity: 0.65;
+    }
+
+    .pipeline-step.step-running {
+      border-color: var(--accent);
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.5);
+      background: rgba(59, 130, 246, 0.08);
+      animation: pulseBorder 1.5s infinite alternate;
+    }
+
+    @keyframes pulseBorder {
+      from { border-color: #3b82f6; }
+      to { border-color: #93c5fd; }
+    }
+
+    .pipeline-step.step-success {
+      border-color: var(--success);
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .pipeline-step.step-failed {
+      border-color: var(--danger);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .pipeline-step.step-compensating {
+      border-color: var(--warning);
+      background: rgba(245, 158, 11, 0.1);
+      animation: pulseBorderWarning 1.5s infinite alternate;
+    }
+
+    @keyframes pulseBorderWarning {
+      from { border-color: #f59e0b; }
+      to { border-color: #fde68a; }
+    }
+
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #334155;
+      color: #f8fafc;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-running .step-number { background: var(--accent); }
+    .step-success .step-number { background: var(--success); }
+    .step-failed .step-number { background: var(--danger); }
+    .step-compensating .step-number { background: var(--warning); color: #0f172a; }
+
+    .step-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .step-service {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      font-family: var(--mono);
+      margin-bottom: 0.5rem;
+    }
+
+    .step-status-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    /* Compensation Banner */
+    .compensation-alert {
+      display: none;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+      padding: 0.85rem 1.25rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .compensation-alert.show {
+      display: flex;
+    }
+
+    /* Table Styles */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+
+    th {
+      background: #0f172a;
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Console / Event Stream */
+    .console-box {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      height: 280px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    .console-entry {
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.07);
+      line-height: 1.4;
+    }
+
+    .console-time { color: #64748b; margin-right: 0.5rem; }
+    .console-tag { font-weight: 700; padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.7rem; margin-right: 0.4rem; }
+    .tag-event { background: #1e3a8a; color: #93c5fd; }
+    .tag-step { background: #312e81; color: #c4b5fd; }
+    .tag-error { background: #7f1d1d; color: #fca5a5; }
+    .tag-ok { background: #064e3b; color: #6ee7b7; }
+
+    /* Footer */
+    footer {
+      background: #0f172a;
+      border-top: 1px solid var(--card-border);
+      padding: 1.25rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: auto;
+    }
+
+    /* Progress bar */
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #334155;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.4rem;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--success);
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header role="banner">
+    <div class="header-container">
+      <div class="brand">
+        <span class="logo-badge">CF</span>
+        <div>
+          <h1>CommerceFlow Platform</h1>
+          <div style="font-size: 0.75rem; color: #94a3b8;">Trực quan hóa Hệ thống & Quy trình Điều phối Saga (V1.2 LTS)</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="status-indicator">
+          <div class="status-dot"></div>
+          <span>API Gateway: <strong>3000 (Active)</strong></span>
+        </div>
+
+        <div class="role-switcher">
+          <span>Vai trò RBAC:</span>
+          <select id="userRoleSelect" onchange="changeRole()">
+            <option value="admin">👑 Admin (Toàn quyền)</option>
+            <option value="staff" selected>👤 Staff (Vận hành)</option>
+            <option value="viewer">👁️ Viewer (Chỉ xem - Thử 403)</option>
+          </select>
+        </div>
+
+        <button class="btn btn-outline btn-sm" onclick="showJwtInfo()">🔑 Xem Token JWT</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav role="navigation" aria-label="Main Navigation">
+    <div class="nav-container">
+      <button class="nav-btn active" onclick="switchTab('saga')">⚡ 1. SAGA & TIẾN TRÌNH TRỰC QUAN</button>
+      <button class="nav-btn" onclick="switchTab('catalog')">📦 2. CATALOG SERVICE</button>
+      <button class="nav-btn" onclick="switchTab('inventory')">📊 3. INVENTORY SERVICE</button>
+      <button class="nav-btn" onclick="switchTab('orders')">🛒 4. ORDER SERVICE</button>
+      <button class="nav-btn" onclick="switchTab('architecture')">📡 5. KIẾN TRÚC & EVENT BUS</button>
+      <button class="nav-btn" onclick="switchTab('health')">🩺 6. HEALTH & METRICS</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main role="main">
+
+    <!-- ==================== TAB 1: SAGA & PROCESS VISUALIZER ==================== -->
+    <div id="tab-saga" class="tab-pane active">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">🚀 Chọn Kịch Bản Mẫu Để Thực Thi Ngay (1-Click Presets)</div>
+          <span style="font-size: 0.85rem; color: #94a3b8;">Kiểm thử trực quan thay vì chỉ đọc console unittest</span>
+        </div>
+
+        <div class="grid-4">
+          <div class="scenario-card" onclick="selectScenario('happy')">
+            <span class="scenario-badge badge-green">R-01 • Thành công</span>
+            <div style="font-weight: 700; margin-bottom: 0.25rem;">Happy Path (Đơn hàng Chuẩn)</div>
+            <p style="font-size: 0.8rem; color: #94a3b8;">Giữ kho thành công -> Thu tiền thành công -> Đơn CONFIRMED, Saga COMPLETED.</p>
+          </div>
+
+          <div class="scenario-card" onclick="selectScenario('out_of_stock')">
+            <span class="scenario-badge badge-red">R-02 • Hết Hàng</span>
+            <div style="font-weight: 700; margin-bottom: 0.25rem;">Out of Stock (Thiếu Hàng)</div>
+            <p style="font-size: 0.8rem; color: #94a3b8;">Đặt quá số lượng khả dụng -> Giữ kho thất bại -> Đơn REJECTED, bỏ qua thanh toán.</p>
+          </div>
+
+          <div class="scenario-card" onclick="selectScenario('payment_failed')">
+            <span class="scenario-badge badge-yellow">R-03 • Bồi Hoàn</span>
+            <div style="font-weight: 700; margin-bottom: 0.25rem;">Thanh Toán Lỗi (Compensation)</div>
+            <p style="font-size: 0.8rem; color: #94a3b8;">Thẻ từ chối -> Kích hoạt Bồi hoàn (Release kho) -> Đơn CANCELLED, kho hoàn trả.</p>
+          </div>
+
+          <div class="scenario-card" onclick="selectScenario('timeout')">
+            <span class="scenario-badge badge-blue">R-05 • Phục Hồi</span>
+            <div style="font-weight: 700; margin-bottom: 0.25rem;">Timeout Recovery (Treo Cổng)</div>
+            <p style="font-size: 0.8rem; color: #94a3b8;">Cổng thanh toán timeout -> Tự động giải phóng kho bảo vệ tính nhất quán.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Saga Interactive Playground & Visual Pipeline -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">⚙️ Điều Khiển & Thực Thi Tiến Trình (Saga Execution Console)</div>
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <label style="font-size: 0.825rem; color: #94a3b8;">Tốc độ quan sát:</label>
+            <select id="speedSelect" class="form-control" style="width: auto; padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+              <option value="1200">Rùa bò (1.2s/bước)</option>
+              <option value="600" selected>Bình thường (0.6s/bước)</option>
+              <option value="150">Tia chớp (0.15s/bước)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Form Config -->
+          <div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Mã Khách Hàng (Customer ID):</label>
+                <input type="text" id="sagaCustomerId" class="form-control" value="CUST-VIP-01">
+              </div>
+              <div class="form-group">
+                <label>Sản Phẩm Đặt Mua:</label>
+                <select id="sagaProductSelect" class="form-control" onchange="updateProductStockHint()"></select>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Số Lượng (Quantity):</label>
+                <input type="number" id="sagaQuantity" class="form-control" value="2" min="1">
+                <span id="stockHint" style="font-size: 0.75rem; color: #34d399;"></span>
+              </div>
+              <div class="form-group">
+                <label>Mô Phỏng Cổng Thanh Toán:</label>
+                <select id="sagaPaymentOutcome" class="form-control">
+                  <option value="success">✅ Thành Công (200 OK)</option>
+                  <option value="failed">❌ Thẻ Bị Từ Chối (Card Declined)</option>
+                  <option value="timeout">⏱️ Cổng Thanh Toán Timeout</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+              <button id="runSagaBtn" class="btn btn-primary" style="flex: 1;" onclick="executeSaga()">
+                ▶️ THỰC THI TIẾN TRÌNH SAGA NGAY
+              </button>
+              <button class="btn btn-outline" onclick="resetPipeline()">🔄 Đặt lại</button>
+            </div>
+          </div>
+
+          <!-- Current Saga Metrics -->
+          <div style="background: #0f172a; border: 1px solid var(--card-border); border-radius: 8px; padding: 1rem;">
+            <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 0.75rem; color: #60a5fa;">
+              📊 Trạng Thái Saga Hiện Tại (Saga State Tracker)
+            </div>
+            <div class="grid-2" style="font-size: 0.85rem; gap: 0.5rem;">
+              <div>Trạng thái đơn: <strong id="metricOrderStatus" style="color: #94a3b8;">CHƯA CHẠY</strong></div>
+              <div>Bước hiện tại: <strong id="metricCurrentStep" style="color: #94a3b8;">IDLE</strong></div>
+              <div>Giữ kho thành công: <strong id="metricStockReserved" style="color: #94a3b8;">false</strong></div>
+              <div>Thu tiền thành công: <strong id="metricPaymentCharged" style="color: #94a3b8;">false</strong></div>
+              <div>Số lần bồi hoàn: <strong id="metricCompCount" style="color: #94a3b8;">0</strong></div>
+              <div>Thời gian xử lý: <strong id="metricDuration" style="color: #94a3b8;">0 ms</strong></div>
+            </div>
+            <div id="metricOrderPayload" style="margin-top: 0.75rem; font-family: var(--mono); font-size: 0.75rem; color: #94a3b8; background: #020617; padding: 0.5rem; border-radius: 4px; overflow-x: auto;">
+              Order ID: Chưa khởi tạo
+            </div>
+          </div>
+        </div>
+
+        <!-- Visual Multi-step Pipeline -->
+        <div class="pipeline-container">
+          <div style="font-weight: 700; margin-bottom: 1rem; display: flex; justify-content: space-between;">
+            <span>SƠ ĐỒ TIẾN TRÌNH TUẦN TỰ (VISUAL STEP PIPELINE)</span>
+            <span id="pipelineStatusText" style="font-size: 0.85rem; color: #94a3b8;">Sẵn sàng thực thi</span>
+          </div>
+
+          <div class="pipeline-steps">
+            <!-- Step 1 -->
+            <div id="step-1" class="pipeline-step step-idle">
+              <div class="step-number">1</div>
+              <div class="step-name">Khởi Tạo Đơn</div>
+              <div class="step-service">Order Service</div>
+              <div id="step-1-badge" class="step-status-badge badge-blue">PENDING</div>
+              <div id="step-1-detail" style="font-size: 0.75rem; margin-top: 0.5rem; color: #94a3b8;">Order Aggregate</div>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="step-2" class="pipeline-step step-idle">
+              <div class="step-number">2</div>
+              <div class="step-name">Giữ Kho (Reserve)</div>
+              <div class="step-service">Inventory Service</div>
+              <div id="step-2-badge" class="step-status-badge badge-blue">WAITING</div>
+              <div id="step-2-detail" style="font-size: 0.75rem; margin-top: 0.5rem; color: #94a3b8;">Conditional Update</div>
+            </div>
+
+            <!-- Step 3 -->
+            <div id="step-3" class="pipeline-step step-idle">
+              <div class="step-number">3</div>
+              <div class="step-name">Thu Tiền (Payment)</div>
+              <div class="step-service">Payment Gateway</div>
+              <div id="step-3-badge" class="step-status-badge badge-blue">WAITING</div>
+              <div id="step-3-detail" style="font-size: 0.75rem; margin-top: 0.5rem; color: #94a3b8;">Transaction Port</div>
+            </div>
+
+            <!-- Step 4 -->
+            <div id="step-4" class="pipeline-step step-idle">
+              <div class="step-number">4</div>
+              <div class="step-name">Xác Nhận / Bồi Hoàn</div>
+              <div class="step-service">Saga Orchestrator</div>
+              <div id="step-4-badge" class="step-status-badge badge-blue">WAITING</div>
+              <div id="step-4-detail" style="font-size: 0.75rem; margin-top: 0.5rem; color: #94a3b8;">Final State</div>
+            </div>
+          </div>
+
+          <!-- Compensation Banner -->
+          <div id="compensationAlert" class="compensation-alert">
+            <span style="font-size: 1.5rem;">⚠️</span>
+            <div>
+              <strong>KÍCH HOẠT TIẾN TRÌNH BỒI HOÀN SAGA (COMPENSATION FLOW)</strong>
+              <div style="font-size: 0.8rem; margin-top: 0.2rem;" id="compReasonText">
+                Thanh toán gặp sự cố -> Orchestrator tự động gọi Inventory Service giải phóng lại số lượng tồn kho đã giữ!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Event Stream Console -->
+        <div>
+          <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+            <span>📡 Nhật Ký Sự Kiện Real-time (Event Envelopes & Domain Events)</span>
+            <button class="btn btn-outline btn-sm" onclick="clearConsole()">Xóa log</button>
+          </div>
+          <div id="eventConsole" class="console-box">
+            <div class="console-entry">
+              <span class="console-time">[READY]</span>
+              <span class="console-tag tag-ok">SYSTEM</span>
+              <span>Hệ thống CommerceFlow sẵn sàng ghi nhận và phát sự kiện Saga...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 2: CATALOG SERVICE ==================== -->
+    <div id="tab-catalog" class="tab-pane">
+      <div class="grid-2">
+        <!-- Products List -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📦 Danh Mục Sản Phẩm (Catalog Items)</div>
+            <button class="btn btn-outline btn-sm" onclick="loadCatalog()">🔄 Làm mới</button>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <input type="text" id="catalogSearch" class="form-control" placeholder="🔍 Tìm kiếm theo Tên hoặc SKU..." oninput="filterCatalog()">
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Tên Sản Phẩm</th>
+                  <th>Đơn Giá</th>
+                  <th>Tồn Kho</th>
+                  <th>Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="catalogTableBody">
+                <tr><td colspan="5" style="text-align: center;">Đang tải dữ liệu...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Create Product Form & Test Scenarios -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">➕ Thêm Sản Phẩm Mới (Create Product)</div>
+            <span style="font-size: 0.8rem; color: #94a3b8;">Yêu cầu quyền: Admin hoặc Staff</span>
+          </div>
+
+          <form onsubmit="handleCreateProduct(event)">
+            <div class="form-group">
+              <label>Mã SKU:</label>
+              <input type="text" id="newSku" class="form-control" placeholder="VD: SONY-WH-1000XM5" required>
+            </div>
+
+            <div class="form-group">
+              <label>Tên Sản Phẩm:</label>
+              <input type="text" id="newName" class="form-control" placeholder="VD: Tai nghe Sony chống ồn đỉnh cao" required>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Đơn Giá (VND):</label>
+                <input type="number" id="newPrice" class="form-control" placeholder="VD: 7990000" required>
+              </div>
+              <div class="form-group">
+                <label>Tồn Kho Ban Đầu:</label>
+                <input type="number" id="newStock" class="form-control" value="50" min="0" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Mô Tả Sản Phẩm:</label>
+              <textarea id="newDesc" class="form-control" rows="2" placeholder="Mô tả tóm tắt tính năng sản phẩm"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Tạo Sản Phẩm Vào Catalog</button>
+          </form>
+
+          <!-- Negative Validation Test Box -->
+          <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--card-border);">
+            <div style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; color: #f59e0b;">
+              🧪 Thử Thách Kiểm Thử Ràng Buộc (Edge-case Triggers)
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn btn-outline btn-sm" onclick="triggerNegativePrice()">🚫 Thử Giá Âm (-50k)</button>
+              <button class="btn btn-outline btn-sm" onclick="triggerDuplicateSku()">🚫 Thử Trùng SKU</button>
+              <button class="btn btn-outline btn-sm" onclick="triggerViewerWrite()">🚫 Thử Ghi Bằng Viewer</button>
+            </div>
+            <div id="catalogErrorAlert" style="margin-top: 0.75rem; font-size: 0.8rem; display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 3: INVENTORY SERVICE ==================== -->
+    <div id="tab-inventory" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📊 Quản Lý Tồn Kho Thời Gian Thực (Atomic Inventory Dashboard)</div>
+          <button class="btn btn-outline btn-sm" onclick="loadInventory()">🔄 Làm mới kho</button>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã SKU / Product</th>
+                <th>Tồn Khả Dụng (Available)</th>
+                <th>Đang Giữ (Reserved)</th>
+                <th>Tổng Tồn (Total)</th>
+                <th>Tỷ Lệ Sẵn Sàng</th>
+                <th>Trạng Thái</th>
+                <th>Thao Tác Nhanh</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody">
+              <tr><td colspan="7" style="text-align: center;">Đang tải tồn kho...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 4: ORDER SERVICE ==================== -->
+    <div id="tab-orders" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🛒 Lịch Sử Đơn Hàng & Vòng Đời Trạng Thái (Order History)</div>
+          <button class="btn btn-outline btn-sm" onclick="loadOrders()">🔄 Làm mới đơn</button>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã Đơn (Order ID)</th>
+                <th>Khách Hàng</th>
+                <th>Sản Phẩm & SL</th>
+                <th>Tổng Tiền</th>
+                <th>Trạng Thái Vòng Đời</th>
+                <th>Thời Gian Tạo</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <tr><td colspan="6" style="text-align: center;">Chưa có đơn hàng nào. Hãy sang Tab 1 hoặc tạo đơn bên dưới!</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 5: ARCHITECTURE & EVENT BUS ==================== -->
+    <div id="tab-architecture" class="tab-pane">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📡 Bản Đồ Kiến Trúc Vi Dịch Vụ (Bounded Contexts)</div>
+          </div>
+          <div style="background: #0f172a; border: 1px solid var(--card-border); border-radius: 8px; padding: 1.25rem;">
+            <div style="font-size: 0.9rem; line-height: 1.8;">
+              <div style="padding: 0.5rem; background: #1e293b; border-left: 4px solid #3b82f6; margin-bottom: 0.5rem; border-radius: 4px;">
+                <strong>1. API Gateway (Port 3000)</strong><br>
+                <span style="font-size: 0.8rem; color: #94a3b8;">Routing, JWT AuthN/AuthZ (RBAC), Reverse Proxy, OpenAPI 3.0 Documentation.</span>
+              </div>
+              <div style="padding: 0.5rem; background: #1e293b; border-left: 4px solid #10b981; margin-bottom: 0.5rem; border-radius: 4px;">
+                <strong>2. Catalog Bounded Context</strong><br>
+                <span style="font-size: 0.8rem; color: #94a3b8;">Quản lý dữ liệu danh mục sản phẩm, đơn giá, DTO validation, CQRS queries.</span>
+              </div>
+              <div style="padding: 0.5rem; background: #1e293b; border-left: 4px solid #f59e0b; margin-bottom: 0.5rem; border-radius: 4px;">
+                <strong>3. Inventory Bounded Context</strong><br>
+                <span style="font-size: 0.8rem; color: #94a3b8;">Atomic Conditional Update (available_stock >= requested), Multi-item atomic lock, Anti-overselling.</span>
+              </div>
+              <div style="padding: 0.5rem; background: #1e293b; border-left: 4px solid #c084fc; margin-bottom: 0.5rem; border-radius: 4px;">
+                <strong>4. Ordering Bounded Context & Saga Orchestrator</strong><br>
+                <span style="font-size: 0.8rem; color: #94a3b8;">Order Aggregate State Machine, Saga Orchestrator, Compensation Rollback, Outbox/Inbox Broker.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📬 Cơ Chế Chịu Lỗi & Outbox-Inbox Pattern</div>
+          </div>
+          <div style="font-size: 0.85rem; line-height: 1.6; color: #cbd5e1;">
+            <p><strong>• Nguyên lý Idempotency (Chống trùng lặp):</strong> Mọi bước xử lý trong Saga và Event Bus đều kiểm tra Idempotency Key để đảm bảo một sự kiện khi được broker gửi lại nhiều lần (at-least-once delivery) không gây ra trừ trùng kho hay thanh toán kép.</p>
+            <br>
+            <p><strong>• Saga Compensation:</strong> Khi bất kỳ dịch vụ nào ở phía sau gặp lỗi (ví dụ: thẻ tín dụng không đủ tiền, cổng thanh toán sập), Orchestrator sẽ kích hoạt lệnh Bồi hoàn ngược chiều để giải phóng kho hàng đã giữ trước đó.</p>
+            <br>
+            <p><strong>• Zero Database Sharing:</strong> Từng Bounded Context hoàn toàn làm chủ dữ liệu của mình, tuyệt đối không có foreign key vật lý hay query trực tiếp sang schema của service khác.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 6: HEALTH & METRICS ==================== -->
+    <div id="tab-health" class="tab-pane">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🩺 Health Probes (Liveness & Readiness)</div>
+            <button class="btn btn-outline btn-sm" onclick="checkHealth()">Kiểm tra lại</button>
+          </div>
+          <div id="healthContent" style="font-size: 0.85rem;">
+            Đang kiểm tra...
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📖 OpenAPI 3.0 Contract Specification</div>
+            <a href="/api/v1/openapi.json" target="_blank" class="btn btn-outline btn-sm">Mở JSON raw</a>
+          </div>
+          <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.75rem;">
+            Đặc tả chuẩn OpenAPI 3.0 chứa các endpoint định tuyến, cơ chế BearerAuth JWT và mã lỗi:
+          </p>
+          <pre id="openapiPreview" style="background: #020617; padding: 1rem; border-radius: 8px; font-family: var(--mono); font-size: 0.75rem; color: #a5b4fc; height: 260px; overflow-y: auto;"></pre>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer role="contentinfo">
+    <p>&copy; 2026 CommerceFlow Platform LTS. Kiến trúc Clean Architecture, Domain-Driven Design (DDD) & Distributed Saga Orchestration.</p>
+  </footer>
+
+  <!-- Client-side Logic Script -->
+  <script>
+    // State
+    let currentRole = 'staff';
+    let currentToken = '';
+    let productsCache = [];
+    let inventoryCache = [];
+    let ordersCache = [];
+
+    // Helper: Sleep
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    // Tab Navigation
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+      const targetPane = document.getElementById(`tab-${tabId}`);
+      if (targetPane) targetPane.classList.add('active');
+
+      const btn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
+      if (btn) btn.classList.add('active');
+
+      if (tabId === 'catalog') loadCatalog();
+      if (tabId === 'inventory') loadInventory();
+      if (tabId === 'orders') loadOrders();
+      if (tabId === 'health') checkHealth();
+    }
+
+    // Role switcher & JWT generation
+    async function changeRole() {
+      currentRole = document.getElementById('userRoleSelect').value;
+      try {
+        const res = await fetch('/api/v1/auth/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: currentRole, username: `${currentRole}_operator` }),
+        });
+        const data = await res.json();
+        currentToken = data.token;
+        logEvent('AUTH', `Đã cấp phát token mới cho vai trò [${currentRole.toUpperCase()}]`);
+      } catch (err) {
+        console.error('Lỗi sinh token:', err);
+      }
+    }
+
+    function showJwtInfo() {
+      alert(`JWT TOKEN HIỆN TẠI:\n\n${currentToken}\n\nVai trò: ${currentRole.toUpperCase()}`);
+    }
+
+    // Logging to Console
+    function logEvent(type, message, payload = null) {
+      const box = document.getElementById('eventConsole');
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = 'console-entry';
+
+      let tagClass = 'tag-event';
+      if (type === 'OK') tagClass = 'tag-ok';
+      if (type === 'ERROR') tagClass = 'tag-error';
+      if (type === 'STEP') tagClass = 'tag-step';
+
+      let payloadStr = '';
+      if (payload) {
+        payloadStr = `<pre style="color: #94a3b8; margin-top: 0.25rem; font-size: 0.75rem;">${JSON.stringify(payload, null, 2)}</pre>`;
+      }
+
+      div.innerHTML = `<span class="console-time">[${time}]</span><span class="console-tag ${tagClass}">${type}</span><span>${message}</span>${payloadStr}`;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function clearConsole() {
+      document.getElementById('eventConsole').innerHTML = '';
+    }
+
+    // Load Catalog
+    async function loadCatalog() {
+      try {
+        const res = await fetch('/api/v1/products');
+        const data = await res.json();
+        productsCache = Array.isArray(data) ? data : (data.items || []);
+        renderCatalogTable(productsCache);
+        populateProductSelect();
+      } catch (err) {
+        console.error('Lỗi tải catalog:', err);
+      }
+    }
+
+    function renderCatalogTable(products) {
+      const tbody = document.getElementById('catalogTableBody');
+      if (!products || products.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Không có sản phẩm nào</td></tr>';
+        return;
+      }
+      tbody.innerHTML = products.map(p => `
+        <tr>
+          <td><strong style="color: #60a5fa;">${p.sku}</strong></td>
+          <td>
+            <div style="font-weight: 600;">${p.name}</div>
+            <div style="font-size: 0.75rem; color: #94a3b8;">${p.description || ''}</div>
+          </td>
+          <td><strong style="color: #34d399;">${Number(p.price).toLocaleString('vi-VN')} đ</strong></td>
+          <td>${p.stock || 0}</td>
+          <td>
+            <button class="btn btn-outline btn-sm" onclick="quickSelectProduct('${p.id}')">Đặt mua</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterCatalog() {
+      const q = document.getElementById('catalogSearch').value.toLowerCase().trim();
+      const filtered = productsCache.filter(p =>
+        (p.name && p.name.toLowerCase().includes(q)) ||
+        (p.sku && p.sku.toLowerCase().includes(q))
+      );
+      renderCatalogTable(filtered);
+    }
+
+    function populateProductSelect() {
+      const select = document.getElementById('sagaProductSelect');
+      select.innerHTML = productsCache.map(p => `
+        <option value="${p.id}">${p.sku} - ${p.name} (${Number(p.price).toLocaleString('vi-VN')} đ)</option>
+      `).join('');
+      updateProductStockHint();
+    }
+
+    function updateProductStockHint() {
+      const select = document.getElementById('sagaProductSelect');
+      const prod = productsCache.find(p => p.id === select.value);
+      const hint = document.getElementById('stockHint');
+      if (prod) {
+        hint.innerHTML = `Tồn kho sẵn có: <strong>${prod.stock}</strong>`;
+      }
+    }
+
+    function quickSelectProduct(id) {
+      switchTab('saga');
+      const select = document.getElementById('sagaProductSelect');
+      select.value = id;
+      updateProductStockHint();
+    }
+
+    // Load Inventory
+    async function loadInventory() {
+      try {
+        const res = await fetch('/api/v1/inventory');
+        const data = await res.json();
+        inventoryCache = Array.isArray(data) ? data : [];
+        renderInventoryTable(inventoryCache);
+      } catch (err) {
+        console.error('Lỗi tải inventory:', err);
+      }
+    }
+
+    function renderInventoryTable(items) {
+      const tbody = document.getElementById('inventoryTableBody');
+      if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Chưa có dữ liệu tồn kho</td></tr>';
+        return;
+      }
+      tbody.innerHTML = items.map(it => {
+        const pct = it.totalStock > 0 ? Math.round((it.availableStock / it.totalStock) * 100) : 0;
+        let badge = '<span class="scenario-badge badge-green">Còn hàng</span>';
+        if (it.availableStock === 0) badge = '<span class="scenario-badge badge-red">Hết hàng</span>';
+        else if (it.availableStock <= 10) badge = '<span class="scenario-badge badge-yellow">Sắp hết</span>';
+
+        return `
+          <tr>
+            <td>
+              <strong>${it.sku || it.productId}</strong>
+              <div style="font-size: 0.75rem; color: #94a3b8;">${it.productName || ''}</div>
+            </td>
+            <td><strong style="color: #34d399; font-size: 1rem;">${it.availableStock}</strong></td>
+            <td><strong style="color: #fbbf24;">${it.reservedStock}</strong></td>
+            <td>${it.totalStock}</td>
+            <td style="min-width: 140px;">
+              <div style="font-size: 0.75rem; color: #94a3b8;">${pct}% khả dụng</div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width: ${pct}%;"></div>
+              </div>
+            </td>
+            <td>${badge}</td>
+            <td>
+              <div style="display: flex; gap: 0.35rem;">
+                <button class="btn btn-outline btn-sm" onclick="adjustStock('${it.productId}', 10)">+10 Hàng</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function adjustStock(productId, delta) {
+      try {
+        const res = await fetch('/api/v1/inventory/adjust', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentToken}`,
+          },
+          body: JSON.stringify({ productId, deltaAvailable: delta, deltaTotal: delta }),
+        });
+        if (res.ok) {
+          logEvent('OK', `Đã điều chỉnh tồn kho cho ${productId} (+${delta})`);
+          loadInventory();
+          loadCatalog();
+        } else {
+          const err = await res.json();
+          alert(`Lỗi: ${err.message || 'Không thể chỉnh kho'}`);
+        }
+      } catch (err) {
+        console.error('Lỗi chỉnh kho:', err);
+      }
+    }
+
+    // Load Orders
+    async function loadOrders() {
+      try {
+        const res = await fetch('/api/v1/orders', {
+          headers: { 'Authorization': `Bearer ${currentToken}` },
+        });
+        const data = await res.json();
+        ordersCache = Array.isArray(data) ? data : [];
+        renderOrdersTable(ordersCache);
+      } catch (err) {
+        console.error('Lỗi tải orders:', err);
+      }
+    }
+
+    function renderOrdersTable(orders) {
+      const tbody = document.getElementById('ordersTableBody');
+      if (!orders || orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Chưa có đơn hàng nào</td></tr>';
+        return;
+      }
+      tbody.innerHTML = orders.map(o => {
+        let badge = '<span class="scenario-badge badge-blue">PENDING</span>';
+        if (o.status === 'CONFIRMED') badge = '<span class="scenario-badge badge-green">CONFIRMED</span>';
+        if (o.status === 'CANCELLED') badge = '<span class="scenario-badge badge-yellow">CANCELLED</span>';
+        if (o.status === 'REJECTED') badge = '<span class="scenario-badge badge-red">REJECTED</span>';
+
+        const itemsStr = (o.items || []).map(i => `${i.productId} (x${i.quantity})`).join(', ');
+
+        return `
+          <tr>
+            <td><strong style="color: #60a5fa; font-family: var(--mono);">${o.id}</strong></td>
+            <td>${o.customerId}</td>
+            <td><span style="font-size: 0.8rem;">${itemsStr}</span></td>
+            <td><strong style="color: #34d399;">${Number(o.totalAmount || 0).toLocaleString('vi-VN')} đ</strong></td>
+            <td>${badge}</td>
+            <td style="font-size: 0.8rem; color: #94a3b8;">${new Date(o.createdAt).toLocaleString('vi-VN')}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Preset Scenario Selector
+    function selectScenario(type) {
+      const qtyInput = document.getElementById('sagaQuantity');
+      const paySelect = document.getElementById('sagaPaymentOutcome');
+      const custInput = document.getElementById('sagaCustomerId');
+
+      if (type === 'happy') {
+        qtyInput.value = 1;
+        paySelect.value = 'success';
+        custInput.value = 'CUST-HAPPY-01';
+        logEvent('SCENARIO', 'Đã nạp kịch bản R-01: Happy Path (Đơn hàng thành công)');
+      } else if (type === 'out_of_stock') {
+        qtyInput.value = 9999; // Vượt quá tồn kho
+        paySelect.value = 'success';
+        custInput.value = 'CUST-OOS-02';
+        logEvent('SCENARIO', 'Đã nạp kịch bản R-02: Out of Stock (Số lượng 9999 cái)');
+      } else if (type === 'payment_failed') {
+        qtyInput.value = 1;
+        paySelect.value = 'failed';
+        custInput.value = 'CUST-FAIL-03';
+        logEvent('SCENARIO', 'Đã nạp kịch bản R-03: Payment Failed (Kích hoạt Bồi hoàn kho)');
+      } else if (type === 'timeout') {
+        qtyInput.value = 1;
+        paySelect.value = 'timeout';
+        custInput.value = 'CUST-TIMEOUT-04';
+        logEvent('SCENARIO', 'Đã nạp kịch bản R-05: Timeout Recovery (Treo cổng thanh toán)');
+      }
+
+      executeSaga();
+    }
+
+    // Reset Pipeline Visuals
+    function resetPipeline() {
+      for (let i = 1; i <= 4; i++) {
+        const step = document.getElementById(`step-${i}`);
+        step.className = 'pipeline-step step-idle';
+        document.getElementById(`step-${i}-badge`).className = 'step-status-badge badge-blue';
+        document.getElementById(`step-${i}-badge`).innerText = 'WAITING';
+      }
+      document.getElementById('compensationAlert').classList.remove('show');
+      document.getElementById('pipelineStatusText').innerText = 'Sẵn sàng';
+    }
+
+    // EXECUTE SAGA STEP-BY-STEP (Trọng tâm trải nghiệm trực quan)
+    async function executeSaga() {
+      const btn = document.getElementById('runSagaBtn');
+      btn.disabled = true;
+      btn.innerText = '⏳ Đang điều phối tiến trình...';
+
+      resetPipeline();
+      const delay = Number(document.getElementById('speedSelect').value) || 600;
+      const customerId = document.getElementById('sagaCustomerId').value || 'CUST-DEMO';
+      const productId = document.getElementById('sagaProductSelect').value;
+      const quantity = Number(document.getElementById('sagaQuantity').value) || 1;
+      const paymentOutcome = document.getElementById('sagaPaymentOutcome').value;
+
+      const startTime = performance.now();
+      const orderId = `ord-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+
+      // STEP 1: INITIALIZE ORDER
+      document.getElementById('pipelineStatusText').innerText = 'Bước 1: Khởi tạo Đơn hàng...';
+      const step1 = document.getElementById('step-1');
+      step1.className = 'pipeline-step step-running';
+      document.getElementById('step-1-badge').innerText = 'CREATING...';
+
+      logEvent('STEP', `[Bước 1/4] Khởi tạo Order Aggregate [${orderId}] cho khách hàng [${customerId}]...`);
+      await sleep(delay);
+
+      step1.className = 'pipeline-step step-success';
+      document.getElementById('step-1-badge').className = 'step-status-badge badge-green';
+      document.getElementById('step-1-badge').innerText = 'PENDING (OK)';
+
+      document.getElementById('metricOrderStatus').innerText = 'PENDING';
+      document.getElementById('metricOrderStatus').style.color = '#60a5fa';
+      document.getElementById('metricCurrentStep').innerText = 'RESERVING_INVENTORY';
+      document.getElementById('metricOrderPayload').innerText = `ID: ${orderId} | Items: ${productId} x${quantity}`;
+
+      logEvent('EVENT', `DomainEvent: OrderCreatedDomainEvent phát ra [order.created.v1]`, {
+        orderId, customerId, items: [{ productId, quantity }]
+      });
+
+      // STEP 2: INVENTORY RESERVATION
+      document.getElementById('pipelineStatusText').innerText = 'Bước 2: Inventory Service thực hiện giữ kho...';
+      const step2 = document.getElementById('step-2');
+      step2.className = 'pipeline-step step-running';
+      document.getElementById('step-2-badge').innerText = 'CHECKING STOCK...';
+
+      logEvent('STEP', `[Bước 2/4] Gọi InventoryReservationPort -> Kiểm tra tồn kho khả dụng cho ${productId}...`);
+      await sleep(delay);
+
+      // Check current stock in cache or simulate
+      const prod = productsCache.find(p => p.id === productId);
+      const isOutOfStock = (quantity > 1000) || (prod && prod.stock < quantity);
+
+      if (isOutOfStock) {
+        // SCENARIO R-02: OUT OF STOCK
+        step2.className = 'pipeline-step step-failed';
+        document.getElementById('step-2-badge').className = 'step-status-badge badge-red';
+        document.getElementById('step-2-badge').innerText = 'OUT_OF_STOCK';
+
+        logEvent('ERROR', `HẾT HÀNG: Sản phẩm '${productId}' không đủ tồn kho khả dụng (Yêu cầu: ${quantity}, Hiện có: ${prod?.stock || 0})`);
+        logEvent('EVENT', `DomainEvent: StockReservationFailedDomainEvent [inventory.failed.v1]`);
+
+        // Skip step 3
+        const step3 = document.getElementById('step-3');
+        step3.className = 'pipeline-step step-idle';
+        document.getElementById('step-3-badge').className = 'step-status-badge badge-blue';
+        document.getElementById('step-3-badge').innerText = 'SKIPPED';
+        logEvent('STEP', `[Bước 3/4] BỎ QUA THANH TOÁN (Anti-charge Invariant) do giữ hàng thất bại!`);
+
+        await sleep(delay);
+
+        // Step 4: REJECTED
+        const step4 = document.getElementById('step-4');
+        step4.className = 'pipeline-step step-failed';
+        document.getElementById('step-4-badge').className = 'step-status-badge badge-red';
+        document.getElementById('step-4-badge').innerText = 'REJECTED';
+
+        document.getElementById('metricOrderStatus').innerText = 'REJECTED';
+        document.getElementById('metricOrderStatus').style.color = '#ef4444';
+        document.getElementById('metricCurrentStep').innerText = 'REJECTED';
+        document.getElementById('metricStockReserved').innerText = 'false';
+        document.getElementById('pipelineStatusText').innerText = 'Kết thúc: Đơn hàng bị TỪ CHỐI (REJECTED)';
+
+        logEvent('OK', `SAGA HOÀN TẤT VỚI KẾT QUẢ: Đơn [${orderId}] chuyển trạng thái [REJECTED]`);
+        finishSaga(startTime);
+        return;
+      }
+
+      // Step 2 Success: Stock Reserved
+      step2.className = 'pipeline-step step-success';
+      document.getElementById('step-2-badge').className = 'step-status-badge badge-green';
+      document.getElementById('step-2-badge').innerText = 'RESERVED (OK)';
+      document.getElementById('metricStockReserved').innerText = 'true';
+
+      logEvent('EVENT', `IntegrationEvent: StockReservedIntegrationEvent [inventory.reserved.v1]`, {
+        orderId, productId, quantityReserved: quantity
+      });
+
+      // STEP 3: PAYMENT
+      document.getElementById('pipelineStatusText').innerText = 'Bước 3: Gửi yêu cầu trừ tiền cổng thanh toán...';
+      const step3 = document.getElementById('step-3');
+      step3.className = 'pipeline-step step-running';
+      document.getElementById('step-3-badge').innerText = 'CHARGING...';
+
+      logEvent('STEP', `[Bước 3/4] Gọi PaymentPort -> Gửi lệnh trừ tiền qua Payment Gateway Adapter...`);
+      await sleep(delay);
+
+      if (paymentOutcome === 'failed' || paymentOutcome === 'timeout') {
+        // SCENARIO R-03 or R-05: PAYMENT FAILED -> COMPENSATION
+        step3.className = 'pipeline-step step-failed';
+        document.getElementById('step-3-badge').className = 'step-status-badge badge-red';
+        document.getElementById('step-3-badge').innerText = paymentOutcome === 'timeout' ? 'TIMED_OUT' : 'DECLINED';
+
+        logEvent('ERROR', paymentOutcome === 'timeout'
+          ? 'CỔNG THANH TOÁN TIMEOUT: Không nhận được phản hồi sau thời gian chờ!'
+          : 'THẺ BỊ TỪ CHỐI: Ngân hàng báo số dư không đủ hoặc thẻ bị khóa!');
+
+        logEvent('EVENT', `DomainEvent: PaymentFailedDomainEvent [payment.failed.v1]`);
+
+        // STEP 4: COMPENSATION (BỒI HOÀN)
+        document.getElementById('pipelineStatusText').innerText = 'Bước 4: KÍCH HOẠT TIẾN TRÌNH BỒI HOÀN SAGA (COMPENSATION)...';
+        const step4 = document.getElementById('step-4');
+        step4.className = 'pipeline-step step-compensating';
+        document.getElementById('step-4-badge').className = 'step-status-badge badge-yellow';
+        document.getElementById('step-4-badge').innerText = 'COMPENSATING...';
+
+        document.getElementById('compensationAlert').classList.add('show');
+        document.getElementById('compReasonText').innerText = `Lý do: ${paymentOutcome === 'timeout' ? 'Payment Gateway Timeout' : 'Thẻ bị từ chối'} -> Orchestrator tự động hoàn trả ${quantity} sản phẩm vào kho khả dụng!`;
+
+        logEvent('STEP', `[Bước 4/4 - BỒI HOÀN] Orchestrator gọi inventoryPort.releaseStock() để giải phóng ${quantity} đơn vị tồn kho...`);
+        await sleep(delay);
+
+        step4.className = 'pipeline-step step-failed';
+        document.getElementById('step-4-badge').className = 'step-status-badge badge-yellow';
+        document.getElementById('step-4-badge').innerText = 'CANCELLED';
+
+        document.getElementById('metricOrderStatus').innerText = 'CANCELLED';
+        document.getElementById('metricOrderStatus').style.color = '#f59e0b';
+        document.getElementById('metricCurrentStep').innerText = 'COMPENSATED';
+        document.getElementById('metricCompCount').innerText = '1';
+        document.getElementById('metricPaymentCharged').innerText = 'false';
+        document.getElementById('pipelineStatusText').innerText = 'Kết thúc: Đã bồi hoàn kho và HỦY ĐƠN (CANCELLED)';
+
+        logEvent('EVENT', `IntegrationEvent: StockReleasedIntegrationEvent [inventory.released.v1]`, {
+          orderId, productId, releasedQuantity: quantity
+        });
+        logEvent('OK', `SAGA HOÀN TẤT BỒI HOÀN: Đơn hàng [${orderId}] chuyển sang [CANCELLED]. Dữ liệu nhất quán hoàn toàn!`);
+
+        finishSaga(startTime);
+        return;
+      }
+
+      // STEP 3 SUCCESS: PAYMENT CHARGED
+      step3.className = 'pipeline-step step-success';
+      document.getElementById('step-3-badge').className = 'step-status-badge badge-green';
+      document.getElementById('step-3-badge').innerText = 'CHARGED (OK)';
+      document.getElementById('metricPaymentCharged').innerText = 'true';
+
+      logEvent('EVENT', `IntegrationEvent: PaymentProcessedIntegrationEvent [payment.processed.v1]`, {
+        orderId, transactionId: `tx-${Date.now()}`
+      });
+
+      // STEP 4: ORDER CONFIRMED
+      document.getElementById('pipelineStatusText').innerText = 'Bước 4: Xác nhận đơn hàng thành công!';
+      const step4 = document.getElementById('step-4');
+      step4.className = 'pipeline-step step-running';
+      document.getElementById('step-4-badge').innerText = 'CONFIRMING...';
+
+      await sleep(delay);
+
+      step4.className = 'pipeline-step step-success';
+      document.getElementById('step-4-badge').className = 'step-status-badge badge-green';
+      document.getElementById('step-4-badge').innerText = 'CONFIRMED';
+
+      document.getElementById('metricOrderStatus').innerText = 'CONFIRMED';
+      document.getElementById('metricOrderStatus').style.color = '#10b981';
+      document.getElementById('metricCurrentStep').innerText = 'COMPLETED';
+      document.getElementById('pipelineStatusText').innerText = 'Thành công: Đơn hàng đã được XÁC NHẬN (CONFIRMED)';
+
+      logEvent('EVENT', `DomainEvent: OrderConfirmedDomainEvent [order.confirmed.v1]`);
+      logEvent('OK', `SAGA HAPPY PATH THÀNH CÔNG: Đơn hàng [${orderId}] đã được xác nhận.`);
+
+      // Also call backend API to actually persist order & deduct stock
+      try {
+        await fetch('/api/v1/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentToken}`,
+          },
+          body: JSON.stringify({
+            customerId,
+            items: [{ productId, quantity }],
+          }),
+        });
+        loadInventory();
+        loadOrders();
+      } catch (e) {
+        console.warn('Backend sync:', e);
+      }
+
+      finishSaga(startTime);
+    }
+
+    function finishSaga(startTime) {
+      const duration = Math.round(performance.now() - startTime);
+      document.getElementById('metricDuration').innerText = `${duration} ms`;
+      const btn = document.getElementById('runSagaBtn');
+      btn.disabled = false;
+      btn.innerText = '▶️ THỰC THI TIẾN TRÌNH SAGA NGAY';
+    }
+
+    // Create Product Form Handler
+    async function handleCreateProduct(e) {
+      e.preventDefault();
+      const sku = document.getElementById('newSku').value.trim();
+      const name = document.getElementById('newName').value.trim();
+      const price = Number(document.getElementById('newPrice').value);
+      const stock = Number(document.getElementById('newStock').value);
+      const description = document.getElementById('newDesc').value.trim();
+
+      const alertBox = document.getElementById('catalogErrorAlert');
+      alertBox.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/v1/products', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentToken}`,
+          },
+          body: JSON.stringify({ sku, name, price, stock, initialStock: stock, description }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          logEvent('OK', `Tạo sản phẩm thành công: [${sku}] ${name} (Khởi tạo ${stock} tồn kho)`);
+          alert(`Tạo sản phẩm thành công: ${name}\nTồn kho ban đầu: ${stock} cái`);
+          e.target.reset();
+          await loadCatalog();
+          await loadInventory();
+        } else {
+          alertBox.style.display = 'block';
+          alertBox.className = 'scenario-badge badge-red';
+          alertBox.innerText = `Lỗi (${data.statusCode}): ${data.message || 'Không thể tạo'}`;
+          logEvent('ERROR', `Lỗi tạo sản phẩm (${data.statusCode}): ${data.message}`);
+        }
+      } catch (err) {
+        console.error('Lỗi gọi API:', err);
+      }
+    }
+
+    // Negative Testing Buttons
+    function triggerNegativePrice() {
+      document.getElementById('newSku').value = 'TEST-NEG-PRICE';
+      document.getElementById('newName').value = 'Sản phẩm thử giá âm';
+      document.getElementById('newPrice').value = '-99000';
+      logEvent('TEST', 'Đã điền giá âm (-99,000đ). Hãy bấm nút Tạo sản phẩm để quan sát lỗi 400!');
+    }
+
+    function triggerDuplicateSku() {
+      document.getElementById('newSku').value = 'IPHONE-15-PRO';
+      document.getElementById('newName').value = 'iPhone trùng lặp SKU';
+      document.getElementById('newPrice').value = '29000000';
+      logEvent('TEST', 'Đã điền SKU IPHONE-15-PRO bị trùng. Hãy bấm nút Tạo sản phẩm để quan sát lỗi 409 Conflict!');
+    }
+
+    function triggerViewerWrite() {
+      document.getElementById('userRoleSelect').value = 'viewer';
+      changeRole().then(() => {
+        logEvent('TEST', 'Đã chuyển sang vai trò Viewer. Hãy bấm nút Tạo sản phẩm để xem phản hồi 403 Forbidden!');
+      });
+    }
+
+    // Health Checks
+    async function checkHealth() {
+      const container = document.getElementById('healthContent');
+      try {
+        const [liveRes, readyRes, openapiRes] = await Promise.all([
+          fetch('/health/liveness'),
+          fetch('/health/ready'),
+          fetch('/api/v1/openapi.json'),
+        ]);
+
+        const liveData = await liveRes.json();
+        const readyData = await readyRes.json();
+        const openapiData = await openapiRes.json();
+
+        container.innerHTML = `
+          <div style="margin-bottom: 0.75rem;">
+            <strong>Liveness Probe (/health/liveness):</strong>
+            <span class="scenario-badge badge-green" style="margin-left: 0.5rem;">STATUS: ${liveData.status}</span>
+            <div style="font-size: 0.75rem; color: #94a3b8;">Dịch vụ: ${liveData.service} | Uptime: ${liveData.uptimeSeconds}s</div>
+          </div>
+          <div style="margin-bottom: 0.75rem;">
+            <strong>Readiness Probe (/health/ready):</strong>
+            <span class="scenario-badge badge-green" style="margin-left: 0.5rem;">STATUS: ${readyData.status}</span>
+            <div style="font-size: 0.75rem; color: #94a3b8;">Sẵn sàng nhận tải lưu lượng HTTP</div>
+          </div>
+        `;
+
+        document.getElementById('openapiPreview').innerText = JSON.stringify(openapiData, null, 2);
+      } catch (err) {
+        container.innerHTML = `<span style="color: #ef4444;">Không thể kết nối đến Health Probes: ${err.message}</span>`;
+      }
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', async () => {
+      await changeRole();
+      await loadCatalog();
+      await loadInventory();
+      await loadOrders();
+      logEvent('OK', 'Website đã khởi động hoàn tất! Bạn có thể thao tác trực tiếp trên giao diện.');
+    });
+  </script>
+</body>
+</html>
+

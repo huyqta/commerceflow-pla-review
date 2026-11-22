@@ -5,6 +5,8 @@
 
 import http from 'node:http';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   CreateOrderUseCase,
   GetOrderByIdQueryHandler,
@@ -53,7 +55,7 @@ export interface AppConfig {
 
 export function loadAndValidateConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   // 1. Kiểm tra và chuẩn hóa PORT
-  const rawPort = env.PORT ?? '3000';
+  const rawPort = env.PORT ?? '3030';
   const parsedPort = Number(rawPort);
 
   if (!Number.isInteger(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
@@ -567,9 +569,29 @@ export class NestApplication {
     method = 'GET',
     headers: Record<string, string | undefined> = {},
     body?: unknown
-  ): Promise<{ status: number; body: unknown }> {
+  ): Promise<{ status: number; body: unknown; contentType?: string }> {
     const prefix = this.appModule.config.apiPrefix;
     const url = reqUrl.split('?')[0];
+
+    // 0. Web Dashboard Single Page Application (Giao diện trực quan cho người dùng)
+    if (
+      method === 'GET' &&
+      (url === '/' ||
+        url === '/dashboard' ||
+        url === '/index.html' ||
+        url === '/saga' ||
+        url === '/ui')
+    ) {
+      const htmlPath = path.resolve(process.cwd(), 'apps/web/public/index.html');
+      if (fs.existsSync(htmlPath)) {
+        const html = fs.readFileSync(htmlPath, 'utf8');
+        return {
+          status: 200,
+          body: html,
+          contentType: 'text/html',
+        };
+      }
+    }
 
     // 1. Health routes (Công khai)
     if (
@@ -617,9 +639,37 @@ export class NestApplication {
         try {
           const user = this.extractUser(headers);
           this.requireRoles(user, ['admin', 'staff']);
-          const res = await this.appModule.catalogModule.controller.createProduct(body, {
+
+          // Hỗ trợ cả initialStock lẫn stock từ client
+          const reqBody = typeof body === 'object' && body !== null
+            ? { ...body, initialStock: (body as any).initialStock ?? (body as any).stock ?? 0 }
+            : body;
+
+          const res = await this.appModule.catalogModule.controller.createProduct(reqBody, {
             user: { id: user.sub, username: user.username, role: user.role },
           });
+
+          // Tự động đồng bộ khởi tạo tồn kho sang Inventory Service (Event-driven / Domain Integration)
+          if (res.statusCode === 201 && res.data) {
+            const initialQty = Number(res.data.availableStock ?? (reqBody as any)?.initialStock ?? 0);
+            const stockRecord = {
+              productId: res.data.id,
+              totalStock: initialQty,
+              reservedStock: 0,
+              availableStock: initialQty,
+              version: 1,
+            };
+            await this.appModule.inventoryModule.repository.setStock(stockRecord);
+
+            // Lưu thêm theo SKU để hỗ trợ query & reserve cả theo ID lẫn SKU
+            if (res.data.sku && res.data.sku !== res.data.id) {
+              await this.appModule.inventoryModule.repository.setStock({
+                ...stockRecord,
+                productId: res.data.sku,
+              });
+            }
+          }
+
           return { status: res.statusCode, body: res.data };
         } catch (err: any) {
           const status = err.statusCode || 500;
@@ -662,6 +712,31 @@ export class NestApplication {
       }
     }
 
+    if (url === `${prefix}/orders` && method === 'GET') {
+      try {
+        this.extractUser(headers);
+        const orders = await (this.appModule.orderingModule.orderRepository as any).findAll();
+        const serialized = (orders || []).map((o: any) => ({
+          id: o.id,
+          customerId: o.customerId,
+          status: typeof o.getStatus === 'function' ? o.getStatus() : o.status,
+          totalAmount: typeof o.getTotalAmount === 'function' ? o.getTotalAmount() : o.totalAmount,
+          items: (typeof o.getItems === 'function' ? o.getItems() : (o.items || [])).map((it: any) => ({
+            productId: it.productId,
+            quantity: it.quantity?.value ?? it.quantity,
+            unitPrice: it.unitPrice?.amount ?? it.unitPrice,
+            currency: it.unitPrice?.currency ?? 'VND',
+          })),
+          createdAt: o.createdAt,
+          updatedAt: o.updatedAt,
+        }));
+        return { status: 200, body: serialized.reverse() };
+      } catch (err: any) {
+        const status = err.statusCode || 500;
+        return { status, body: { statusCode: status, message: err.message, errorCode: err.code || 'ERROR' } };
+      }
+    }
+
     if (url.startsWith(`${prefix}/orders/`)) {
       const orderId = url.replace(`${prefix}/orders/`, '').trim();
       if (method === 'GET') {
@@ -679,6 +754,98 @@ export class NestApplication {
       }
     }
 
+    // 5. Inventory Routes
+    if (url === `${prefix}/inventory` && method === 'GET') {
+      const products = (await this.appModule.catalogModule.repository.findAll()) || [];
+      const stocks = await (this.appModule.inventoryModule.repository as any).getAllStocks();
+      const stockMap = new Map(stocks.map((s: any) => [s.productId, s]));
+
+      // Tự động đảm bảo mọi sản phẩm từ catalog đều có tồn kho tương ứng trong inventory
+      for (const prod of products) {
+        if (!stockMap.has(prod.id) && !stockMap.has(prod.sku)) {
+          const newStock = {
+            productId: prod.id,
+            totalStock: Number(prod.stock) || 0,
+            reservedStock: 0,
+            availableStock: Number(prod.stock) || 0,
+            version: 1,
+          };
+          await this.appModule.inventoryModule.repository.setStock(newStock);
+          if (prod.sku && prod.sku !== prod.id) {
+            await this.appModule.inventoryModule.repository.setStock({
+              ...newStock,
+              productId: prod.sku,
+            });
+          }
+          stocks.push(newStock);
+          stockMap.set(prod.id, newStock);
+        }
+      }
+
+      const productMap = new Map(products.map((p: any) => [p.id, p]));
+      const enriched = (stocks || []).map((s: any) => {
+        const prod = productMap.get(s.productId) || products.find((p: any) => p.sku === s.productId);
+        return {
+          ...s,
+          productName: prod?.name || s.productId,
+          sku: prod?.sku || s.productId,
+          price: prod?.price || 0,
+          currency: prod?.currency || 'VND',
+        };
+      });
+      const seen = new Set<string>();
+      const uniqueEnriched = enriched.filter((item: any) => {
+        const key = item.sku;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      return { status: 200, body: uniqueEnriched };
+    }
+
+    if (url === `${prefix}/inventory/adjust` && method === 'POST') {
+      try {
+        const user = this.extractUser(headers);
+        this.requireRoles(user, ['admin', 'staff']);
+        const { productId, deltaAvailable, deltaTotal } = (body as any) || {};
+        const current = await this.appModule.inventoryModule.repository.getStock(productId);
+        if (!current) {
+          return { status: 404, body: { statusCode: 404, message: `Product ${productId} not found in inventory` } };
+        }
+        current.availableStock = Math.max(0, current.availableStock + (Number(deltaAvailable) || 0));
+        current.totalStock = Math.max(0, current.totalStock + (Number(deltaTotal || deltaAvailable) || 0));
+        current.version++;
+        await this.appModule.inventoryModule.repository.setStock(current);
+        return { status: 200, body: current };
+      } catch (err: any) {
+        const status = err.statusCode || 500;
+        return { status, body: { statusCode: status, message: err.message, errorCode: err.code || 'ERROR' } };
+      }
+    }
+
+    // 6. Identity & Token Helper Route
+    if (url === `${prefix}/auth/token` && method === 'POST') {
+      const { role = 'staff', username } = (body as any) || {};
+      const validRole = ['admin', 'staff', 'viewer'].includes(role) ? (role as UserRole) : 'staff';
+      const token = generateJwt(
+        {
+          sub: `user-${validRole}-${Date.now().toString(36)}`,
+          role: validRole,
+          username: username || `${validRole}_operator`,
+        },
+        this.appModule.config.jwtSecret
+      );
+      return {
+        status: 200,
+        body: {
+          token,
+          role: validRole,
+          username: username || `${validRole}_operator`,
+          expiresIn: 3600,
+        },
+      };
+    }
+
     return {
       status: 404,
       body: { statusCode: 404, message: `Cannot ${method} ${reqUrl}`, error: 'Not Found' },
@@ -689,6 +856,17 @@ export class NestApplication {
     const targetPort = port ?? this.appModule.config.port;
 
     this.server = http.createServer(async (req, res) => {
+      // Thiết lập CORS header cho phép trình duyệt truy cập API tự do
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+      if (req.method === 'OPTIONS') {
+        res.writeHead(204);
+        res.end();
+        return;
+      }
+
       // Đọc body nếu có
       let bodyData: any = undefined;
       if (req.method === 'POST' || req.method === 'PUT') {
@@ -709,9 +887,14 @@ export class NestApplication {
         headers[key] = Array.isArray(val) ? val[0] : val;
       }
 
-      const { status, body } = await this.handleRequest(req.url ?? '/', req.method, headers, bodyData);
-      res.writeHead(status, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(body));
+      const result: any = await this.handleRequest(req.url ?? '/', req.method, headers, bodyData);
+      if (result.contentType === 'text/html') {
+        res.writeHead(result.status, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(typeof result.body === 'string' ? result.body : String(result.body));
+      } else {
+        res.writeHead(result.status, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result.body));
+      }
     });
 
     return new Promise((resolve) => {

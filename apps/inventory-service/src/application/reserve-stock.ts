@@ -160,8 +160,8 @@ export class InMemoryInventoryRepository implements InventoryRepository {
     }
 
     // Atomic Condition: available >= quantity
-    if (stock.availableStock < quantity) {
-      return { success: false, available: stock.availableStock };
+    if (typeof stock.availableStock !== 'number' || isNaN(stock.availableStock) || stock.availableStock < quantity) {
+      return { success: false, available: stock.availableStock || 0 };
     }
 
     // Cập nhật nguyên tử

@@ -1,0 +1,17 @@
+.git
+.github
+node_modules
+npm-debug.log*
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+dist
+build
+coverage
+tmp
+.vscode
+.idea
+

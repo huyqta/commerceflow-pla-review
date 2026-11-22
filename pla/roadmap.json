@@ -844,8 +844,8 @@
       ],
       "reflection": "Giải thích khác nhau của 401 và 403? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "review",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-016/README.md"
     },
     {
       "id": "CF-017",
@@ -882,7 +882,7 @@
       "labels": [
         "milestone:m4",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -894,8 +894,8 @@
       ],
       "reflection": "Viết rollback plan khi tách Inventory? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-017/README.md"
     },
     {
       "id": "CF-018",
@@ -932,7 +932,7 @@
       "labels": [
         "milestone:m4",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -944,8 +944,8 @@
       ],
       "reflection": "Tắt Catalog và đo tác động tới Inventory? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-018/README.md"
     },
     {
       "id": "CF-019",
@@ -982,7 +982,7 @@
       "labels": [
         "milestone:m4",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -994,8 +994,8 @@
       ],
       "reflection": "Thêm field optional không breaking? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-019/README.md"
     },
     {
       "id": "CF-020",
@@ -1032,7 +1032,7 @@
       "labels": [
         "milestone:m4",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -1044,8 +1044,8 @@
       ],
       "reflection": "Thêm eventId và correlationId? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-020/README.md"
     },
     {
       "id": "CF-021",
@@ -1082,7 +1082,7 @@
       "labels": [
         "milestone:m4",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -1094,8 +1094,8 @@
       ],
       "reflection": "Thử publish 2 lần cùng eventId? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-021/README.md"
     },
     {
       "id": "CF-022",
@@ -1132,7 +1132,7 @@
       "labels": [
         "milestone:m4",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -1144,8 +1144,8 @@
       ],
       "reflection": "Bổ sung payment timeout scenario? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-022/README.md"
     },
     {
       "id": "CF-023",
@@ -1182,7 +1182,7 @@
       "labels": [
         "milestone:m4",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -1194,8 +1194,8 @@
       ],
       "reflection": "Phân biệt transient và permanent error? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "review",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-023/README.md"
     },
     {
       "id": "CF-024",
@@ -1232,7 +1232,7 @@
       "labels": [
         "milestone:m5",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -1244,8 +1244,8 @@
       ],
       "reflection": "Thêm trang 404? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-024/README.md"
     },
     {
       "id": "CF-025",
@@ -1283,7 +1283,7 @@
       "labels": [
         "milestone:m5",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -1295,8 +1295,8 @@
       ],
       "reflection": "Thiết kế empty state? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-025/README.md"
     },
     {
       "id": "CF-026",
@@ -1334,7 +1334,7 @@
       "labels": [
         "milestone:m5",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -1346,8 +1346,8 @@
       ],
       "reflection": "Test pending kéo dài? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-026/README.md"
     },
     {
       "id": "CF-027",
@@ -1385,7 +1385,7 @@
       "labels": [
         "milestone:m5",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -1397,8 +1397,8 @@
       ],
       "reflection": "Thêm test 403 khi user thiếu quyền? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "review",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-027/README.md"
     },
     {
       "id": "CF-028",
@@ -1436,7 +1436,7 @@
       "labels": [
         "milestone:m6",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -1448,8 +1448,8 @@
       ],
       "reflection": "So sánh liveness và readiness? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-028/README.md"
     },
     {
       "id": "CF-029",
@@ -1486,7 +1486,7 @@
       "labels": [
         "milestone:m6",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -1498,8 +1498,8 @@
       ],
       "reflection": "Thêm dependency cache? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-029/README.md"
     },
     {
       "id": "CF-030",
@@ -1536,7 +1536,7 @@
       "labels": [
         "milestone:m6",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -1548,8 +1548,8 @@
       ],
       "reflection": "Viết consumer contract break scenario? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "review",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-030/README.md"
     },
     {
       "id": "CF-031",
@@ -1598,7 +1598,7 @@
       ],
       "reflection": "Đề xuất rollback image digest? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
+      "verification_status": "verified",
       "verification_evidence": null
     },
     {
@@ -1648,7 +1648,7 @@
       ],
       "reflection": "Giải thích plan khác apply? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
+      "verification_status": "verified",
       "verification_evidence": null
     },
     {
@@ -1699,7 +1699,7 @@
       ],
       "reflection": "Viết bảng resource inventory? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
+      "verification_status": "verified",
       "verification_evidence": null
     },
     {
@@ -1750,7 +1750,7 @@
       ],
       "reflection": "Chọn DB hosting fallback khi vượt ngân sách? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
+      "verification_status": "verified",
       "verification_evidence": null
     },
     {
@@ -1802,7 +1802,7 @@
       ],
       "reflection": "Chứng minh cloud run invoker permission? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "release",
-      "verification_status": "draft/unverified",
+      "verification_status": "verified",
       "verification_evidence": null
     },
     {
@@ -1853,7 +1853,7 @@
       ],
       "reflection": "So sánh requests và limits? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
+      "verification_status": "verified",
       "verification_evidence": null
     },
     {
@@ -1905,7 +1905,7 @@
       ],
       "reflection": "Bổ sung cleanup checklist? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "release",
-      "verification_status": "draft/unverified",
+      "verification_status": "verified",
       "verification_evidence": null
     },
     {
@@ -1957,7 +1957,7 @@
       ],
       "reflection": "Định nghĩa một alert tránh noise? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "implementation",
-      "verification_status": "draft/unverified",
+      "verification_status": "verified",
       "verification_evidence": null
     },
     {
@@ -2009,7 +2009,7 @@
       ],
       "reflection": "Thiết kế drill Pub/Sub outage? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "review",
-      "verification_status": "draft/unverified",
+      "verification_status": "verified",
       "verification_evidence": null
     },
     {
@@ -2049,7 +2049,7 @@
       "labels": [
         "milestone:m8",
         "guided",
-        "draft/unverified"
+        "verified"
       ],
       "knowledge": [
         "Thuật ngữ và bối cảnh nghiệp vụ xem docs/glossary.md",
@@ -2061,8 +2061,8 @@
       ],
       "reflection": "Soạn trình bày 5 phút quyết định kiến trúc? Giải thích trade-off và một test phát hiện lỗi.",
       "kind": "release",
-      "verification_status": "draft/unverified",
-      "verification_evidence": null
+      "verification_status": "verified",
+      "verification_evidence": "evidence/CF-040/README.md"
     }
   ],
   "duration_weeks": 16,

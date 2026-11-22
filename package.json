@@ -1,0 +1,11 @@
+{
+  "name": "commerceflow-platform",
+  "version": "1.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start:gateway": "node --experimental-strip-types apps/api-gateway/src/main.ts",
+    "test": "node --experimental-strip-types --test tests/**/*.test.ts tests/**/*.spec.ts"
+  }
+}
+

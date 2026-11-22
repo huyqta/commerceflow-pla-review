@@ -256,9 +256,10 @@ export class InMemoryCatalogRepository {
   }
 
   public async findBySku(sku: string): Promise<ProductEntity | null> {
+    if (!sku || typeof sku !== 'string') return null;
     const target = sku.toLowerCase();
     for (const item of this.items.values()) {
-      if (!item.isDeleted && item.sku.toLowerCase() === target) {
+      if (!item.isDeleted && item.sku && item.sku.toLowerCase() === target) {
         return item;
       }
     }

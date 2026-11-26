@@ -129,6 +129,31 @@ export class PostgresInventoryRepository implements InventoryRepository {
     );
   }
 
+  /**
+   * ============================================================================
+   * PATTERN: ATOMIC CONDITIONAL UPDATE & ANTI-OVERSELLING (Kiểm soát đồng thời)
+   * ============================================================================
+   * [Mục đích cho Junior Developer]:
+   * 1. BÀI TOÁN FLASH SALE & RACE CONDITION:
+   *    Giả sử trong kho chỉ còn 1 chiếc iPhone cuối cùng (`available_stock = 1`).
+   *    Tại cùng một mili-giây, có 100 khách hàng cùng bấm nút "Đặt Mua".
+   *    Nếu code theo cách ngây thơ thông thường (Read-Modify-Write):
+   *       const stock = await db.query("SELECT available_stock FROM ..."); // cả 100 request đều đọc ra 1!
+   *       if (stock >= 1) {
+   *          await db.query("UPDATE ... SET available_stock = stock - 1"); // Cả 100 request đều update!
+   *       }
+   *    -> KẾT QUẢ: 100 người mua thành công 1 chiếc máy! Tồn kho bị âm -99!
+   *       Cửa hàng không có hàng giao và đối mặt với khủng hoảng truyền thông!
+   * 
+   * 2. GIẢI PHÁP - ATOMIC CONDITIONAL UPDATE:
+   *    Đẩy việc kiểm tra điều kiện xuống trực tiếp bộ xử lý nguyên tử của PostgreSQL:
+   *    `UPDATE inventory_stocks ... WHERE product_id = $2 AND available_stock >= $1`
+   *    - PostgreSQL có cơ chế Row-level Lock khi thực hiện câu lệnh UPDATE.
+   *    - Request đầu tiên chạm vào hàng dữ liệu sẽ trừ tồn kho từ 1 về 0 (`rowCount = 1` -> Thành công).
+   *    - 99 requests còn lại đến sau, mệnh đề `available_stock >= 1` lúc này là FALSE,
+   *      nên PostgreSQL bỏ qua và trả về `rowCount = 0` -> Thất bại ngay lập tức!
+   *    - Không cần dùng `SELECT ... FOR UPDATE` nặng nề, không sợ Deadlock!
+   */
   public async atomicReserveItem(
     productId: string,
     quantity: number

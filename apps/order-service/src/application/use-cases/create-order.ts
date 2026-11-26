@@ -43,9 +43,15 @@ export class OrderNotFoundError extends ApplicationError {
 }
 
 /**
- * -------------------------------------------------------------
- * 2. Commands & DTOs (C - Command Model)
- * -------------------------------------------------------------
+ * ============================================================================
+ * PATTERN: CQRS - COMMAND SIDE & DTO PATTERN (Command Query Responsibility Segregation)
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * - CQRS chia hệ thống làm 2 nửa độc lập:
+ *   1. Command: Thao tác làm THAY ĐỔI dữ liệu (Create, Update, Delete). Không trả về dữ liệu lớn, chỉ trả status/id.
+ *   2. Query: Thao tác ĐỌC dữ liệu (Read-only). Tuyệt đối không gây ra side-effect (không đổi status, không update DB).
+ * - DTO (Data Transfer Object): Đối tượng thuần dữ liệu mang thông tin từ bên ngoài (Controller/API)
+ *   vào Use Case, giúp che giấu cấu trúc nội bộ của Domain Entity.
  */
 export interface CreateOrderItemInput {
   productId: string;
@@ -71,9 +77,14 @@ export interface CreateOrderResult {
 }
 
 /**
- * -------------------------------------------------------------
- * 3. Queries & Views (Q - Query Model)
- * -------------------------------------------------------------
+ * ============================================================================
+ * PATTERN: CQRS - QUERY SIDE & READ MODEL (View DTO)
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * - Phía Query chỉ quan tâm đến việc dữ liệu được hiển thị trên UI như thế nào.
+ * - `OrderViewDto` làm phẳng dữ liệu (phẳng hóa Money.amount, Quantity.value),
+ *   tính sẵn `subtotal` để Frontend React render ngay mà không cần tính toán lại.
+ * - Không cần tạo Aggregate Root phức tạp khi chỉ muốn đọc dữ liệu lên màn hình!
  */
 export interface GetOrderByIdQuery {
   orderId: string;
@@ -97,9 +108,22 @@ export interface OrderViewDto {
 }
 
 /**
- * -------------------------------------------------------------
- * 4. Unit of Work (Transaction Boundary Abstraction)
- * -------------------------------------------------------------
+ * ============================================================================
+ * PATTERN: UNIT OF WORK (Quản lý Ranh giới Giao dịch - Transaction Boundary)
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * - Khi tạo một đơn hàng, có nhiều thao tác phải xảy ra đồng thời:
+ *   + Lưu đơn hàng vào bảng `orders`
+ *   + Lưu từng item vào bảng `order_items`
+ *   + Lưu event vào bảng `outbox_events`
+ * - NẾU KHÔNG CÓ UNIT OF WORK: Nếu bước 1 và 2 thành công nhưng bước 3 lỗi mạng,
+ *   dữ liệu sẽ bị lưu dở dang (Inconsistent Data) trong Database!
+ * - Unit of Work đảm bảo nguyên tắc ACID "All or Nothing":
+ *   Bọc toàn bộ thao tác trong 1 transaction. Nếu bất kỳ dòng nào ném lỗi,
+ *   tự động ROLLBACK toàn bộ về trạng thái ban đầu như chưa có gì xảy ra.
+ * - LƯU Ý SỐNG CÒN: Không bao giờ gọi HTTP API bên ngoài (như gọi sang Payment Gateway)
+ *   bên trong Unit of Work SQL, vì nếu API ngoài bị chậm 10 giây, database connection
+ *   sẽ bị giữ khóa (lock) suốt 10 giây, làm sập toàn bộ database connection pool!
  */
 export interface UnitOfWork {
   startTransaction(): Promise<void>;

@@ -6,6 +6,32 @@
 
 import type { IEventBus, EventEnvelope } from './event-bus.ts';
 
+/**
+ * ============================================================================
+ * CLOUD / RESILIENCE PATTERN: ERROR CLASSIFICATION, RETRY WITH JITTER & DLQ
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * 1. PHÂN LOẠI LỖI (ERROR CLASSIFICATION):
+ *    Không phải lỗi nào cũng được phép Retry!
+ *    - LỖI VĨNH VIỄN (PERMANENT): 400 Bad Request, sai validation schema, JSON hỏng.
+ *      Dù bạn có retry 100 lần thì input sai vẫn sai! Retry lúc này chỉ làm tốn CPU và vô ích.
+ *    - LỖI TẠM THỜI (TRANSIENT): 503 Service Unavailable, 504 Gateway Timeout, rớt mạng 100ms.
+ *      Những lỗi này chỉ xuất hiện chớp nhoáng, thử lại sau vài giây sẽ thành công.
+ * 
+ * 2. EXPONENTIAL BACKOFF VỚI JITTER:
+ *    - Exponential Backoff: Lần 1 chờ 100ms, lần 2 chờ 200ms, lần 3 chờ 400ms...
+ *      Tránh việc client bắn request dồn dập làm server quá tải thêm.
+ *    - Jitter (Nhiễu ngẫu nhiên): Thêm một khoảng thời gian ngẫu nhiên (ví dụ 100ms + random(50ms)).
+ *      Nếu không có Jitter, khi server phục hồi sau sự cố, 10.000 clients đang retry
+ *      sẽ ĐỒNG LOẠT gửi request tại CÙNG MỘT GIÂY (Thundering Herd Problem), đánh sập server lần 2!
+ * 
+ * 3. DEAD-LETTER QUEUE (DLQ):
+ *    - Nếu một tin nhắn đã retry tối đa (ví dụ 3 lần) mà vẫn thất bại, ta không thể vứt bỏ nó,
+ *      cũng không thể để nó đứng chặn đầu hàng đợi làm nghẽn các tin nhắn khác (Head-of-Line Blocking).
+ *    - Giải pháp: Đẩy tin nhắn hỏng này vào "Nghĩa địa tin nhắn" (Dead-Letter Queue).
+ *      Tiến trình xử lý các message khác vẫn tiếp tục bình thường.
+ *      Kỹ sư On-call sẽ kiểm tra DLQ, sửa lỗi hệ thống rồi bấm "Replay" để xử lý lại.
+ */
 export type ErrorClassification = 'TRANSIENT' | 'PERMANENT';
 
 export interface RetryPolicyConfig {

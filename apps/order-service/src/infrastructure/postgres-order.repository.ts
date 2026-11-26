@@ -142,7 +142,36 @@ export class PostgresOrderRepository implements OrderRepository {
         );
       }
 
+      // 3. TRANSACTIONAL OUTBOX: Lưu đồng thời Domain Events vào bảng outbox_events trong CÙNG TRANSACTION
+      // Triệt tiêu hoàn toàn rủi ro Dual-write giữa Database và Message Broker (Cloud Pub/Sub)
+      const domainEvents = order.getDomainEvents();
+      for (const event of domainEvents) {
+        const eventId = `evt-${order.id}-${event.eventName.toLowerCase()}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+        const payloadJson = JSON.stringify(event.payload || {
+          orderId: order.id,
+          customerId: order.customerId,
+          status: order.getStatus(),
+          totalAmount: totalAmount,
+        });
+
+        await client.query(
+          `INSERT INTO outbox_events (id, aggregate_type, aggregate_id, event_type, payload, correlation_id, status, created_at)
+           VALUES ($1, 'Order', $2, $3, $4, $5, 'PENDING', NOW())
+           ON CONFLICT (id) DO NOTHING`,
+          [
+            eventId,
+            order.id,
+            event.eventName,
+            payloadJson,
+            `corr-${order.id}`,
+          ]
+        );
+      }
+
       await client.query('COMMIT');
+
+      // Dọn dẹp Domain Events sau khi đã lưu trữ thành công vào outbox_events
+      order.clearDomainEvents();
     } catch (err) {
       await client.query('ROLLBACK');
       throw err;
@@ -240,6 +269,47 @@ export class PostgresOrderRepository implements OrderRepository {
     const pool = await this.getPool();
     const res = await pool.query('DELETE FROM orders WHERE id = $1', [id]);
     return (res.rowCount ?? 0) > 0;
+  }
+
+  /**
+   * Truy vấn danh sách sự kiện Outbox đang chờ xuất bản (PENDING hoặc FAILED với retry < 5)
+   */
+  public async getPendingOutboxEvents(limit = 20): Promise<any[]> {
+    const pool = await this.getPool();
+    const res = await pool.query(
+      `SELECT * FROM outbox_events
+       WHERE status = 'PENDING' OR (status = 'FAILED' AND retry_count < 5)
+       ORDER BY created_at ASC
+       LIMIT $1`,
+      [limit]
+    );
+    return res.rows;
+  }
+
+  /**
+   * Đánh dấu sự kiện Outbox đã được xuất bản thành công lên Broker
+   */
+  public async markOutboxEventPublished(id: string): Promise<void> {
+    const pool = await this.getPool();
+    await pool.query(
+      `UPDATE outbox_events
+       SET status = 'PUBLISHED', published_at = NOW()
+       WHERE id = $1`,
+      [id]
+    );
+  }
+
+  /**
+   * Đánh dấu sự kiện Outbox thất bại khi đẩy lên Broker
+   */
+  public async markOutboxEventFailed(id: string, errorMessage: string): Promise<void> {
+    const pool = await this.getPool();
+    await pool.query(
+      `UPDATE outbox_events
+       SET status = 'FAILED', retry_count = retry_count + 1, last_error = $2
+       WHERE id = $1`,
+      [id, errorMessage]
+    );
   }
 
   public async close(): Promise<void> {

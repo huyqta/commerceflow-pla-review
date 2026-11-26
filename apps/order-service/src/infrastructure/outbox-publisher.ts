@@ -14,6 +14,38 @@ import type { VersionedIntegrationEvent } from '../../../../packages/contracts/s
  * -------------------------------------------------------------
  */
 
+/**
+ * ============================================================================
+ * CLOUD / DISTRIBUTED PATTERN: TRANSACTIONAL OUTBOX & INBOX PATTERN
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * 1. BÀI TOÁN DUAL-WRITE HAZARD:
+ *    Khi tạo một Order, bạn muốn làm 2 việc:
+ *       a. Lưu Order vào Database (PostgreSQL).
+ *       b. Gửi tin nhắn "OrderCreated" lên Cloud Pub/Sub để Inventory trừ kho.
+ *    Nếu bạn viết:
+ *       await db.save(order);
+ *       await pubsub.publish(event);
+ *    Chuyện gì xảy ra nếu dòng 1 thành công, nhưng dòng 2 bị rớt mạng?
+ *    -> Database đã lưu đơn, nhưng Pub/Sub không có tin nhắn! Kho không biết để giữ hàng!
+ *    Còn nếu bạn đảo ngược: gửi Pub/Sub trước rồi mới lưu DB?
+ *    Nếu lưu DB lỗi, Pub/Sub đã gửi đi mất rồi, kho trừ hàng cho một đơn... không tồn tại!
+ * 
+ * 2. GIẢI PHÁP - TRANSACTIONAL OUTBOX:
+ *    Thay vì gửi trực tiếp lên Pub/Sub, ta lưu Event vào bảng `outbox_events` NGAY TRONG
+ *    CÙNG LOCAL TRANSACTION ACID với bảng `orders`.
+ *    Vì cùng một transaction của PostgreSQL, nên hoặc CẢ HAI CÙNG ĐƯỢC LƯU, hoặc ROLLBACK CẢ HAI!
+ * 
+ * 3. OUTBOX WORKER (RELAY):
+ *    Một tiến trình nền chạy độc lập, liên tục quét bảng `outbox_events` và đẩy lên Pub/Sub.
+ *    Nếu rớt mạng, nó retry lại. Khi broker xác nhận (ACK), nó đổi status thành 'PUBLISHED'.
+ * 
+ * 4. INBOX PATTERN (IDEMPOTENT CONSUMER):
+ *    Vì Worker có thể retry, Pub/Sub có thể gửi một tin nhắn 2 lần (At-least-once delivery).
+ *    Phía nhận (Consumer) dùng bảng `inbox_events` với `UNIQUE (message_id, consumer_name)`.
+ *    Nếu thấy messageId này đã từng xử lý rồi, Consumer lập tức bỏ qua, chống trừ kho 2 lần!
+ */
+
 export type OutboxStatus = 'PENDING' | 'PROCESSING' | 'PUBLISHED' | 'FAILED';
 
 export interface OutboxRecord {

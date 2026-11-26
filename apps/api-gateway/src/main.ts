@@ -3,6 +3,31 @@
 // AuthN/AuthZ (HMAC-SHA256 JWT, RBAC), OpenAPI 3.0 & Route Routing Pipeline (CommerceFlow Milestone M3)
 // Tương thích Node.js 24 LTS native type-stripping (không dùng parameter properties hay legacy decorators).
 
+/**
+ * ============================================================================
+ * CLOUD / ARCHITECTURE PATTERN: API GATEWAY & REVERSE PROXY
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * 1. ĐẶT VẤN ĐỀ:
+ *    Trong hệ thống Microservices, nếu ta để Frontend (React Web/Mobile App) gọi trực tiếp:
+ *    - http://catalog-service:3001/products
+ *    - http://order-service:3002/orders
+ *    - http://inventory-service:3003/inventory
+ *    -> VẤN ĐỀ:
+ *       + Frontend phải nhớ hàng tá địa chỉ IP, Port khác nhau.
+ *       + Mỗi service lại phải tự implement xác thực JWT, giải mã token, chống DDOS, bật CORS...
+ *       + Lộ cấu trúc mạng nội bộ ra Internet -> Rủi ro bảo mật nghiêm trọng!
+ * 
+ * 2. GIẢI PHÁP - API GATEWAY:
+ *    - API Gateway là CỔNG TIẾP NHẬN DUY NHẤT (Single Point of Entry) tiếp xúc với Internet.
+ *    - Toàn bộ request từ bên ngoài chỉ gửi đến duy nhất: https://api.commerceflow.com
+ *    - API Gateway làm nhiệm vụ "Bảo vệ & Điều phối":
+ *      1. Xác thực danh tính (Authentication Guard): Kiểm tra JWT hợp lệ trước khi cho vào.
+ *      2. Kiểm tra phân quyền (Authorization RBAC): Viewer chỉ được GET, Staff mới được POST.
+ *      3. Reverse Proxy Routing: Bóc tách URL và chuyển tiếp (forward) request đến đúng microservice nội bộ.
+ *      4. Gắn Correlation ID: Tạo vết (trace) giao dịch phân tán cho request.
+ */
+
 import http from 'node:http';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -60,6 +85,10 @@ export interface AppConfig {
   readonly catalogDatabaseUrl?: string;
   readonly inventoryDatabaseUrl?: string;
   readonly orderDatabaseUrl?: string;
+  readonly catalogServiceUrl?: string;
+  readonly inventoryServiceUrl?: string;
+  readonly orderServiceUrl?: string;
+  readonly useStandaloneServices?: boolean;
   readonly jwtSecret: string;
 }
 
@@ -106,6 +135,13 @@ export function loadAndValidateConfig(env: NodeJS.ProcessEnv = process.env): App
     catalogDatabaseUrl: env.CATALOG_DATABASE_URL || env.DATABASE_URL,
     inventoryDatabaseUrl: env.INVENTORY_DATABASE_URL || env.DATABASE_URL,
     orderDatabaseUrl: env.ORDER_DATABASE_URL || env.DATABASE_URL,
+    catalogServiceUrl: env.CATALOG_SERVICE_URL,
+    inventoryServiceUrl: env.INVENTORY_SERVICE_URL,
+    orderServiceUrl: env.ORDER_SERVICE_URL,
+    useStandaloneServices:
+      env.USE_STANDALONE_INVENTORY === 'true' ||
+      env.USE_STANDALONE_SERVICES === 'true' ||
+      Boolean(env.CATALOG_SERVICE_URL || env.INVENTORY_SERVICE_URL || env.ORDER_SERVICE_URL),
     jwtSecret,
   });
 }
@@ -695,6 +731,53 @@ export class NestApplication {
   }
 
   /**
+   * Helper chuyển tiếp HTTP request đến Microservice độc lập (Strangler Fig / Reverse Proxy Pattern)
+   */
+  public async forwardToMicroservice(
+    serviceBaseUrl: string,
+    targetPath: string,
+    method: string,
+    headers: Record<string, string | undefined>,
+    body?: unknown
+  ): Promise<{ status: number; body: unknown; contentType?: string } | null> {
+    try {
+      const url = `${serviceBaseUrl}${targetPath}`;
+      const forwardHeaders: Record<string, string> = {
+        'content-type': 'application/json',
+      };
+      if (headers['authorization'] || headers['Authorization']) {
+        forwardHeaders['authorization'] = (headers['authorization'] || headers['Authorization'])!;
+      }
+      if (headers['x-correlation-id'] || headers['X-Correlation-ID']) {
+        forwardHeaders['x-correlation-id'] = (headers['x-correlation-id'] || headers['X-Correlation-ID'])!;
+      }
+
+      const res = await fetch(url, {
+        method,
+        headers: forwardHeaders,
+        body: body && (method === 'POST' || method === 'PUT') ? JSON.stringify(body) : undefined,
+      });
+
+      const text = await res.text();
+      let parsed: any;
+      try {
+        parsed = text ? JSON.parse(text) : {};
+      } catch {
+        parsed = text;
+      }
+
+      return {
+        status: res.status,
+        body: parsed,
+        contentType: res.headers.get('content-type') || 'application/json',
+      };
+    } catch {
+      // Fallback về in-process nếu service độc lập chưa bật hoặc gặp lỗi
+      return null;
+    }
+  }
+
+  /**
    * Request dispatcher mô phỏng NestJS routing & middleware pipeline
    */
   public async handleRequest(
@@ -828,6 +911,16 @@ export class NestApplication {
 
     // 3. Catalog Routes
     if (url === `${prefix}/products`) {
+      // Strangler Fig Pattern: Chuyển tiếp tới Standalone Catalog Service nếu cấu hình
+      if (this.appModule.config.useStandaloneServices && this.appModule.config.catalogServiceUrl) {
+        if (method === 'POST') {
+          const user = this.extractUser(headers);
+          this.requireRoles(user, ['admin', 'staff']);
+        }
+        const remote = await this.forwardToMicroservice(this.appModule.config.catalogServiceUrl, '/api/v1/products', method, headers, body);
+        if (remote) return remote;
+      }
+
       if (method === 'GET') {
         const res = await this.appModule.catalogModule.controller.getProducts();
         if (res.statusCode === 200 && (res.data as any)?.items) {
@@ -895,6 +988,16 @@ export class NestApplication {
 
     // 4. Ordering Routes
     if (url === `${prefix}/orders`) {
+      // Strangler Fig Pattern: Chuyển tiếp tới Standalone Ordering Service nếu cấu hình
+      if (this.appModule.config.useStandaloneServices && this.appModule.config.orderServiceUrl) {
+        if (method === 'POST') {
+          const user = this.extractUser(headers);
+          this.requireRoles(user, ['admin', 'staff']);
+        }
+        const remote = await this.forwardToMicroservice(this.appModule.config.orderServiceUrl, '/api/v1/orders', method, headers, body);
+        if (remote) return remote;
+      }
+
       if (method === 'POST') {
         try {
           const user = this.extractUser(headers);
@@ -953,6 +1056,13 @@ export class NestApplication {
     }
 
     if (url.startsWith(`${prefix}/orders/`)) {
+      // Strangler Fig Pattern: Chuyển tiếp tới Standalone Ordering Service nếu cấu hình
+      if (this.appModule.config.useStandaloneServices && this.appModule.config.orderServiceUrl) {
+        this.extractUser(headers);
+        const remote = await this.forwardToMicroservice(this.appModule.config.orderServiceUrl, url.replace(prefix, '/api/v1'), method, headers, body);
+        if (remote) return remote;
+      }
+
       const orderId = url.replace(`${prefix}/orders/`, '').trim();
       if (method === 'GET') {
         try {
@@ -970,6 +1080,11 @@ export class NestApplication {
     }
 
     // 5. Inventory Routes
+    if ((url === `${prefix}/inventory` || url.startsWith(`${prefix}/inventory/`)) && this.appModule.config.useStandaloneServices && this.appModule.config.inventoryServiceUrl) {
+      const remote = await this.forwardToMicroservice(this.appModule.config.inventoryServiceUrl, url.replace(prefix, '/api/v1'), method, headers, body);
+      if (remote) return remote;
+    }
+
     if (url === `${prefix}/inventory` && method === 'GET') {
       const products = (await this.appModule.catalogModule.repository.findAll()) || [];
       const stocks = await (this.appModule.inventoryModule.repository as any).getAllStocks();

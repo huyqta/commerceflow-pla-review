@@ -1,0 +1,119 @@
+# .github/workflows/cd.yml
+# Continuous Deployment (CD) Pipeline cho CommerceFlow Cloud-Native Platform
+# Tự động hóa 100% quy trình triển khai lên Google Cloud Run & Artifact Registry
+# Bảo mật bằng Workload Identity Federation (WIF) - Không lưu trữ static Service Account Keys
+
+name: CD Pipeline (Automated Cloud Deployment)
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.gitignore'
+
+permissions:
+  contents: read
+  id-token: write # Bắt buộc để xác thực OIDC với Google Cloud WIF
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false # Không hủy deployment đang chạy để tránh trạng thái dở dang
+
+jobs:
+  deploy-cloud-run:
+    name: Build, Publish & Deploy to Cloud Run
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production # Hỗ trợ Environment Protection Rules & Approval Gate
+
+    steps:
+      - name: 1. Checkout Mã nguồn
+        uses: actions/checkout@v4
+
+      - name: 2. Thiết lập Node.js 24 & Chạy Automated Tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: 3. Chạy toàn bộ Test Suites (Regression Guard)
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm install --frozen-lockfile || pnpm install
+          pnpm test
+
+      - name: 4. Xác thực An toàn với GCP qua Workload Identity Federation (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: 5. Cài đặt Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID || 'orderflow-learning' }}
+
+      - name: 6. Đăng nhập Docker với Artifact Registry
+        run: |
+          gcloud artifacts repositories create commerceflow-apps --repository-format=docker --location=asia-southeast1 --description="CommerceFlow Docker Repository" --quiet || true
+          gcloud auth configure-docker asia-southeast1-docker.pkg.dev --quiet
+
+      - name: 7. Khởi tạo Docker Buildx & Cache
+        uses: docker/setup-buildx-action@v3
+
+      - name: 8. Build & Push Image lên Artifact Registry (Immutable SHA Tag)
+        env:
+          IMAGE_TAG: sha-${{ github.sha }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || 'orderflow-learning' }}
+          REGION: asia-southeast1
+          REPO: commerceflow-apps
+        run: |
+          IMAGE_URI="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/api-gateway:${IMAGE_TAG}"
+          echo "Building & pushing ${IMAGE_URI}..."
+          
+          docker build \
+            -f infra/docker/Dockerfile \
+            -t "${IMAGE_URI}" \
+            -t "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/api-gateway:latest" \
+            .
+            
+          docker push "${IMAGE_URI}"
+
+      - name: 9. Triển khai Tự động lên Google Cloud Run (Zero Downtime)
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: commerceflow-api-gateway
+          region: asia-southeast1
+          image: asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID || 'orderflow-learning' }}/commerceflow-apps/api-gateway:sha-${{ github.sha }}
+          flags: |
+            --min-instances=0
+            --max-instances=3
+            --port=3000
+            --allow-unauthenticated
+          env_vars: |
+            NODE_ENV=production
+            USE_STANDALONE_SERVICES=true
+
+      - name: 10. Tự động Kiểm tra Sức khỏe (Post-Deployment Health Probe Verification)
+        env:
+          SERVICE_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          echo "Verifying live service at: ${SERVICE_URL}"
+          
+          # Thăm dò Liveness Probe
+          curl --fail --retry 5 --retry-delay 5 --retry-connrefused "${SERVICE_URL}/health/liveness" || {
+            echo "::error::Liveness check failed! Rolling back revision..."
+            exit 1
+          }
+          
+          # Thăm dò Readiness Probe
+          curl --fail --retry 5 --retry-delay 5 --retry-connrefused "${SERVICE_URL}/health/ready" || {
+            echo "::error::Readiness check failed! Rolling back revision..."
+            exit 1
+          }
+          
+          echo "Deployment successful & all health probes passed!"

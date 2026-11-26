@@ -7,9 +7,27 @@
 import { Order } from '../../domain/order.aggregate.ts';
 
 /**
- * Port: OrderRepository
- * Hợp đồng trừu tượng định nghĩa các thao tác lưu trữ và truy vấn Order Aggregate.
- * Thuộc sở hữu của tầng Application / Domain (Driven Port / Outbound Port).
+ * ============================================================================
+ * PATTERN: PORTS AND ADAPTERS / HEXAGONAL ARCHITECTURE (Clean Architecture)
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * 1. ĐẶT VẤN ĐỀ:
+ *    Trong kiến trúc phân tầng truyền thống (Layered Architecture), tầng Controller
+ *    gọi Service, Service gọi trực tiếp Database ORM (Prisma/TypeORM). Hậu quả:
+ *    Code nghiệp vụ bị dính chặt vào database. Nếu muốn đổi từ PostgreSQL sang MongoDB,
+ *    hoặc muốn viết Unit Test mà không có database chạy thật, lập trình viên sẽ gặp ác mộng!
+ * 
+ * 2. GIẢI PHÁP - DEPENDENCY INVERSION PRINCIPLE (DIP):
+ *    - Tầng Application định nghĩa ra một "PORT" (Giao diện trừu tượng - `interface OrderRepository`).
+ *      Đây giống như một "ổ cắm điện tiêu chuẩn" trong nhà bạn. Ổ cắm quy định: Muốn cấp điện
+ *      thì phải có 2 chấu tròn. Ổ cắm không quan tâm nguồn điện đến từ thủy điện, nhiệt điện hay pin mặt trời!
+ *    - Tầng Infrastructure cung cấp các "ADAPTER" (Đầu cắm):
+ *      + `InMemoryOrderRepository`: Dùng `Map` trong RAM để chạy Unit Test trong 2ms.
+ *      + `PostgresOrderRepository`: Cắm vào PostgreSQL trên Cloud SQL để chạy thật trên production.
+ * 
+ * 3. NGUYÊN TẮC VÀNG:
+ *    Tầng nghiệp vụ (Domain & Application) TUYỆT ĐỐI KHÔNG ĐƯỢC import `pg`, `prisma`, hay bất kỳ
+ *    thư viện hạ tầng nào. Hạ tầng phải phụ thuộc vào Nghiệp vụ, không bao giờ ngược lại!
  */
 export interface OrderRepository {
   /**
@@ -40,9 +58,14 @@ export interface OrderRepository {
 }
 
 /**
- * In-Memory Adapter: InMemoryOrderRepository
- * Cài đặt OrderRepository dùng cấu trúc Map trong RAM.
- * Phục vụ Unit Testing, Local Micro-labs, hoặc Dev Mocking mà không cần cài đặt PostgreSQL/Prisma.
+ * ============================================================================
+ * ADAPTER: IN-MEMORY ADAPTER (Cắm vào Port OrderRepository)
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * - Đây là một Adapter cụ thể triển khai Port `OrderRepository`.
+ * - Dùng `Map<string, Order>` ngay trong RAM của tiến trình Node.js.
+ * - Lợi ích: Chạy toàn bộ các test kịch bản nghiệp vụ (happy path, validation, invariants)
+ *   với tốc độ ánh sáng mà không cần cài đặt PostgreSQL, Docker hay chạy migrations.
  */
 export class InMemoryOrderRepository implements OrderRepository {
   private readonly storage: Map<string, Order>;

@@ -8,11 +8,26 @@
 import type { VersionedIntegrationEvent, EventMetadata } from '../../contracts/src/order.ts';
 
 /**
- * -------------------------------------------------------------
- * 1. Interface & Core Abstractions
- * -------------------------------------------------------------
+ * ============================================================================
+ * CLOUD / DISTRIBUTED PATTERN: EVENT ENVELOPE & DISTRIBUTED TRACING
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * 1. EVENT ENVELOPE (BÌ THƯ SỰ KIỆN):
+ *    Tại sao không gửi mỗi object `{ orderId: "123", amount: 50000 }` lên queue?
+ *    -> Khi gửi một lá thư qua bưu điện, bạn không gửi một tờ giấy trần trụi.
+ *       Bạn phải bỏ nó vào một BÌ THƯ (Envelope) có ghi:
+ *       - Người gửi (`source`): Service nào bắn ra?
+ *       - Thời gian (`timestamp`): Phát ra lúc nào?
+ *       - Loại thư (`eventType`): Thư chúc mừng hay giấy báo nợ?
+ *       - Phiên bản (`version`): Tránh trường hợp Consumer phiên bản cũ đọc nhầm format mới.
+ * 
+ * 2. CORRELATION ID & CAUSATION ID (TRUY VẾT PHÂN TÁN):
+ *    - `correlationId`: Tưởng tượng bạn gọi tổng đài khám bệnh và được cấp "Mã hồ sơ bệnh án: #12345".
+ *      Bạn đi chụp X-quang, thử máu, lấy thuốc... ở phòng ban nào cũng kẹp theo mã #12345.
+ *      Khi hệ thống gặp lỗi, kỹ sư chỉ cần tìm `correlationId = #12345` trên Cloud Logging
+ *      là xem được trọn vẹn toàn bộ hành trình của request qua 10 microservices khác nhau!
+ *    - `causationId`: ID của sự kiện cha trực tiếp kích hoạt ra sự kiện này (quan hệ nhân quả).
  */
-
 export interface EventEnvelope<T = unknown> {
   readonly eventId: string;
   readonly eventType: string;

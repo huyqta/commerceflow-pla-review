@@ -4,6 +4,18 @@
 
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'REJECTED';
 
+/**
+ * ============================================================================
+ * PATTERN: DOMAIN EVENT (Domain-Driven Design - DDD)
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * - Domain Event đại diện cho một sự kiện nghiệp vụ quan trọng ĐÃ XẢY RA trong quá khứ.
+ * - Tên event luôn được đặt ở thì quá khứ (ví dụ: OrderCreated, OrderConfirmed).
+ * - Domain Event mang tính "Bất biến" (Immutable) và lưu trữ trạng thái tại thời điểm phát sinh.
+ * - Giúp phân tách lỏng lẻo (decoupling): Khi đơn hàng tạo xong, Domain không cần quan tâm
+ *   ai sẽ gửi email, ai sẽ trừ kho hay tính điểm thưởng. Nó chỉ phát ra Domain Event,
+ *   tầng Application / Event Bus sẽ lo việc lắng nghe và xử lý tiếp.
+ */
 export interface DomainEvent {
   readonly eventName: string;
   readonly occurredOn: Date;
@@ -52,8 +64,18 @@ export class OrderCancelledDomainEvent implements DomainEvent {
 }
 
 /**
- * Value Object: Quantity
- * Invariant: Phải là số nguyên dương (> 0).
+ * ============================================================================
+ * PATTERN: VALUE OBJECT (Domain-Driven Design - DDD)
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * - Tại sao không dùng kiểu nguyên thủy `number` mà phải tạo class `Quantity` và `Money`?
+ *   -> Để tránh vấn đề "Primitive Obsession" (Ám ảnh kiểu nguyên thủy).
+ * - Đặc tính của Value Object:
+ *   1. Không có ID (định danh bằng toàn bộ giá trị bên trong).
+ *   2. Bất biến (Immutable) - không có setter, muốn đổi giá trị phải tạo đối tượng mới.
+ *   3. Tự bảo vệ tính hợp lệ (Self-Validation / Invariant): Không ai có thể tạo ra
+ *      một Quantity mang số âm (-5) hay số thập phân (1.5 cái áo) trong toàn bộ hệ thống.
+ * - Giúp code an toàn ngay từ tầng cốt lõi, không cần if/else kiểm tra giá trị ở khắp nơi.
  */
 export class Quantity {
   public readonly value: number;
@@ -75,7 +97,7 @@ export class Quantity {
 
 /**
  * Value Object: Money
- * Invariant: Số tiền không âm, đơn vị tiền tệ hợp lệ.
+ * Tự bảo vệ Invariant: Số tiền không âm, đơn vị tiền tệ hợp lệ và khớp loại tiền khi cộng.
  */
 export class Money {
   public readonly amount: number;
@@ -102,8 +124,14 @@ export class Money {
 }
 
 /**
- * Entity: OrderLineItem
- * Thuộc sở hữu nội bộ của Order Aggregate.
+ * ============================================================================
+ * PATTERN: ENTITY (Domain-Driven Design - DDD)
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * - Khác với Value Object, Entity là đối tượng có DANH TÍNH (Identity) duy nhất (`productId`),
+ *   dù số lượng hay giá thay đổi thì nó vẫn là dòng sản phẩm đó.
+ * - OrderLineItem thuộc quyền sở hữu nội bộ của Order Aggregate. Bên ngoài không được
+ *   truy cập hay sửa đổi trực tiếp OrderLineItem mà phải thông qua Order Aggregate Root.
  */
 export class OrderLineItem {
   public readonly productId: string;
@@ -132,8 +160,17 @@ export interface CreateOrderItemInput {
 }
 
 /**
- * Aggregate Root: Order
- * Quản lý trạng thái và bảo vệ các business invariants của đơn hàng.
+ * ============================================================================
+ * PATTERN: AGGREGATE ROOT & INVARIANT GUARDIAN (DDD)
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * - Order là "Aggregate Root" - người gác cổng của toàn bộ cụm thực thể Đơn hàng.
+ * - Quy tắc bất di bất dịch của DDD: Mọi thao tác từ bên ngoài (thêm item, đổi trạng thái)
+ *   BẮT BUỘC phải đi qua Aggregate Root. Không ai được phép chọc trực tiếp vào items hay status.
+ * - Mục tiêu: Đảm bảo toàn bộ quy tắc nghiệp vụ (Invariants) luôn luôn đúng ở mọi thời điểm:
+ *   + Không có 2 item trùng productId trong một đơn hàng.
+ *   + Trạng thái đơn hàng chuyển đổi theo đúng State Machine.
+ *   + Tổng tiền luôn bằng tổng các items con.
  */
 export class Order {
   public readonly id: string;
@@ -144,6 +181,11 @@ export class Order {
   public readonly createdAt: Date;
   public updatedAt: Date;
 
+  /**
+   * Private Constructor:
+   * Ngăn chặn việc gọi `new Order(...)` tùy tiện từ bên ngoài.
+   * Buộc người dùng phải khởi tạo thông qua các Static Factory Methods (Order.create hoặc Order.reconstitute).
+   */
   private constructor(
     id: string,
     customerId: string,
@@ -160,7 +202,15 @@ export class Order {
   }
 
   /**
-   * Factory method khởi tạo Order Aggregate mới
+   * ============================================================================
+   * PATTERN: STATIC FACTORY METHOD (Tạo mới Nghiệp vụ)
+   * ============================================================================
+   * [Mục đích cho Junior Developer]:
+   * - Dùng khi người dùng BẮT ĐẦU ĐẶT HÀNG MỚI.
+   * - Tại sao cần hàm này?
+   *   1. Validate toàn bộ dữ liệu đầu vào (Invariants) trước khi cho phép đối tượng tồn tại.
+   *   2. Đảm bảo trạng thái ban đầu luôn là 'PENDING'.
+   *   3. QUAN TRỌNG: Tự động phát ra `OrderCreatedDomainEvent`.
    */
   public static create(
     id: string,
@@ -211,8 +261,16 @@ export class Order {
   }
 
   /**
-   * Khôi phục Aggregate từ dữ liệu lưu trữ (Persistence Reconstitution)
-   * Không kích hoạt OrderCreatedDomainEvent vì đơn hàng đã tồn tại trong quá khứ.
+   * ============================================================================
+   * PATTERN: RECONSTITUTION PATTERN (Khôi phục từ Persistence / Database)
+   * ============================================================================
+   * [Mục đích cho Junior Developer]:
+   * - Dùng khi tầng Repository đọc dữ liệu từ Database lên và dựng lại đối tượng Order trong RAM.
+   * - TẠI SAO PHẢI TÁCH RIÊNG VỚI `Order.create()`?
+   *   -> Khi đọc đơn hàng từ DB lên để xem chi tiết, đơn hàng này ĐÃ ĐƯỢC TẠO TRONG QUÁ KHỨ.
+   *      Nếu dùng hàm `create()`, nó sẽ bắn lại `OrderCreatedDomainEvent`, khiến hệ thống
+   *      bị gửi lặp email hoặc trừ kho lần 2!
+   *   -> `reconstitute` nạp lại trạng thái lịch sử mà TUYỆT ĐỐI KHÔNG sinh ra Domain Event mới.
    */
   public static reconstitute(
     id: string,
@@ -257,6 +315,22 @@ export class Order {
   }
 
   /**
+   * ============================================================================
+   * PATTERN: STATE MACHINE & INVARIANT STATE TRANSITIONS
+   * ============================================================================
+   * [Mục đích cho Junior Developer]:
+   * - Một đơn hàng trong thương mại điện tử trải qua vòng đời nghiêm ngặt:
+   *   PENDING -> CONFIRMED (khi thanh toán & giữ kho thành công)
+   *   PENDING -> CANCELLED (khi khách hủy hoặc thanh toán thất bại)
+   *   PENDING -> REJECTED (khi kho hết hàng)
+   * - TẠI SAO PHẢI CHECK KỸ TRƯỚC KHI ĐỔI TRẠNG THÁI?
+   *   Trong hệ phân tán, các tin nhắn/request có thể đến SAI THỨ TỰ (out-of-order).
+   *   Ví dụ: Khách vừa bấm hủy đơn (CANCELLED), 1 giây sau webhook thanh toán đến trễ
+   *   đòi chuyển đơn thành CONFIRMED. Nếu không có State Invariant Guard bên dưới,
+   *   đơn hàng đã hủy sẽ bị "hồi sinh", gây thảm họa thất thoát hàng hóa!
+   */
+
+  /**
    * Xác nhận đơn hàng (PENDING -> CONFIRMED)
    * Invariant: Không cho phép confirm từ CANCELLED hoặc REJECTED.
    */
@@ -275,7 +349,7 @@ export class Order {
 
   /**
    * Hủy đơn hàng (PENDING -> CANCELLED)
-   * Invariant: Không cho phép cancel đơn hàng đã CONFIRMED.
+   * Invariant: Không cho phép cancel đơn hàng đã CONFIRMED (đã thanh toán/giao).
    */
   public cancel(reason = 'Customer requested'): void {
     if (this.status === 'CONFIRMED') {

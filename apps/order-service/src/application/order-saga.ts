@@ -67,14 +67,37 @@ export class SagaError extends Error {
 }
 
 /**
- * -------------------------------------------------------------
- * OrderSagaOrchestrator
- * -------------------------------------------------------------
- * Bộ điều phối Saga Orchestration tập trung:
- * - Theo dõi State Machine của Saga instance
- * - Điều phối tuần tự các bước: Reserve Stock -> Charge Payment -> Confirm Order
- * - Tự động kích hoạt bù trừ (Compensation) khi thanh toán lỗi hoặc timeout
- * - Chống lặp bước (Idempotency step transitions)
+ * ============================================================================
+ * CLOUD / DISTRIBUTED PATTERN: SAGA ORCHESTRATION & COMPENSATING TRANSACTIONS
+ * ============================================================================
+ * [Mục đích cho Junior Developer]:
+ * 1. TẠI SAO CẦN SAGA TRONG MICROSERVICES?
+ *    Trong một Monolith nguyên khối, bạn có thể bọc việc "Tạo đơn", "Trừ kho", "Trừ tiền"
+ *    vào một Transaction ACID của SQL:
+ *       BEGIN TRANSACTION;
+ *          INSERT INTO orders...;
+ *          UPDATE inventory...;
+ *          INSERT INTO payments...;
+ *       COMMIT;
+ *    Nếu thanh toán lỗi, database tự động rollback cả 3 bước.
+ * 
+ *    NHƯNG trong Microservices:
+ *    - Order Service có database riêng.
+ *    - Inventory Service có database riêng.
+ *    - Payment Gateway là API bên thứ 3 (Stripe / VNPay).
+ *    -> KHÔNG THỂ DÙNG TRANSACTION SQL XUYÊN QUA 3 MÁY CHỦ KHÁC NHAU ĐƯỢC!
+ * 
+ * 2. GIẢI PHÁP - SAGA PATTERN:
+ *    Chia một giao dịch phân tán lớn thành chuỗi các local transactions kế tiếp nhau.
+ *    OrderSagaOrchestrator đóng vai trò "Nhạc trưởng" (Orchestrator) điều phối tuần tự:
+ *    - Bước 1: Gọi Inventory Service giữ hàng (Reserve).
+ *    - Bước 2: Gọi Payment Service trừ tiền (Charge).
+ *    - Bước 3: Nếu thành công -> Xác nhận đơn (Confirm).
+ * 
+ * 3. GIAO DỊCH BỒI HOÀN (COMPENSATING TRANSACTION):
+ *    Điều gì xảy ra nếu Bước 1 giữ kho thành công nhưng Bước 2 trừ tiền THẤT BẠI (thẻ hết tiền)?
+ *    -> Không thể "Rollback" theo kiểu database. Thay vào đó, Orchestrator phải thực thi
+ *       một hành động BỒI HOÀN ngược lại: Gọi `release()` kho để trả lại hàng, sau đó hủy đơn!
  */
 export class OrderSagaOrchestrator {
   private readonly inventoryClient: InventoryClient;

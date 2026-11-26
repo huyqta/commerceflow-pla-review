@@ -233,10 +233,18 @@ export function validateCreateProductDto(input: unknown): CreateProductDto {
 
 /**
  * -------------------------------------------------------------
- * 6. Catalog In-Memory Store & Repository
+ * 6. Catalog In-Memory Store & Repository Interface
  * -------------------------------------------------------------
  */
-export class InMemoryCatalogRepository {
+export interface CatalogRepository {
+  findAll(): Promise<ProductEntity[]>;
+  findById(id: string): Promise<ProductEntity | null>;
+  findBySku(sku: string): Promise<ProductEntity | null>;
+  save(entity: ProductEntity): Promise<ProductEntity>;
+  clear?(): Promise<void>;
+}
+
+export class InMemoryCatalogRepository implements CatalogRepository {
   private readonly items = new Map<string, ProductEntity>();
 
   constructor(initialData: ProductEntity[] = []) {
@@ -286,9 +294,9 @@ export class InMemoryCatalogRepository {
  * - POST /products        (201 CREATED, 400 BAD REQUEST, 401 UNAUTHORIZED, 403 FORBIDDEN, 409 CONFLICT)
  */
 export class CatalogController {
-  private readonly repository: InMemoryCatalogRepository;
+  private readonly repository: CatalogRepository;
 
-  constructor(repository: InMemoryCatalogRepository = new InMemoryCatalogRepository()) {
+  constructor(repository: CatalogRepository = new InMemoryCatalogRepository()) {
     this.repository = repository;
   }
 

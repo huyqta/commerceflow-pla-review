@@ -24,11 +24,17 @@ import {
   CatalogController,
   InMemoryCatalogRepository,
 } from '../../catalog-service/src/catalog.controller.ts';
+import type { CatalogRepository } from '../../catalog-service/src/catalog.controller.ts';
 import {
   ReserveStockUseCase,
   ReleaseStockUseCase,
   InMemoryInventoryRepository,
 } from '../../inventory-service/src/application/reserve-stock.ts';
+import type { InventoryRepository } from '../../inventory-service/src/application/reserve-stock.ts';
+import type { OrderRepository } from '../../order-service/src/application/ports/order-repository.ts';
+import { PostgresCatalogRepository } from '../../catalog-service/src/infrastructure/postgres-catalog.repository.ts';
+import { PostgresInventoryRepository } from '../../inventory-service/src/infrastructure/postgres-inventory.repository.ts';
+import { PostgresOrderRepository } from '../../order-service/src/infrastructure/postgres-order.repository.ts';
 
 /**
  * -------------------------------------------------------------
@@ -51,6 +57,9 @@ export interface AppConfig {
   readonly serviceName: string;
   readonly apiPrefix: string;
   readonly databaseUrl?: string;
+  readonly catalogDatabaseUrl?: string;
+  readonly inventoryDatabaseUrl?: string;
+  readonly orderDatabaseUrl?: string;
   readonly jwtSecret: string;
 }
 
@@ -94,6 +103,9 @@ export function loadAndValidateConfig(env: NodeJS.ProcessEnv = process.env): App
     serviceName: env.SERVICE_NAME ?? 'commerceflow-api-gateway',
     apiPrefix: env.API_PREFIX ?? '/api/v1',
     databaseUrl: env.DATABASE_URL,
+    catalogDatabaseUrl: env.CATALOG_DATABASE_URL || env.DATABASE_URL,
+    inventoryDatabaseUrl: env.INVENTORY_DATABASE_URL || env.DATABASE_URL,
+    orderDatabaseUrl: env.ORDER_DATABASE_URL || env.DATABASE_URL,
     jwtSecret,
   });
 }
@@ -361,10 +373,10 @@ export class HealthModule {
 }
 
 export class CatalogModule {
-  public readonly repository: InMemoryCatalogRepository;
+  public readonly repository: CatalogRepository;
   public readonly controller: CatalogController;
 
-  constructor() {
+  constructor(databaseUrl?: string) {
     // Seed sẵn danh sách sản phẩm mẫu cho môi trường Demo
     const sampleProducts = [
       {
@@ -417,20 +429,54 @@ export class CatalogModule {
       },
     ];
 
-    this.repository = new InMemoryCatalogRepository(sampleProducts);
+    if (databaseUrl) {
+      try {
+        const pgRepo = new PostgresCatalogRepository(databaseUrl);
+        pgRepo.initSchema().catch((err: any) => {
+          console.warn('[CatalogModule] Auto-init schema warning:', err?.message || err);
+        });
+        this.repository = pgRepo;
+        console.log('[CatalogModule] Using PostgresCatalogRepository (catalog_db)');
+      } catch (err) {
+        console.warn('[CatalogModule] Fallback to InMemoryCatalogRepository:', err);
+        this.repository = new InMemoryCatalogRepository(sampleProducts);
+      }
+    } else {
+      this.repository = new InMemoryCatalogRepository(sampleProducts);
+    }
     this.controller = new CatalogController(this.repository);
   }
 }
 
 export class InventoryModule {
-  public readonly repository: InMemoryInventoryRepository;
+  public readonly repository: InventoryRepository;
   public readonly reserveStockUseCase: ReserveStockUseCase;
   public readonly releaseStockUseCase: ReleaseStockUseCase;
 
-  constructor() {
-    this.repository = new InMemoryInventoryRepository();
+  constructor(databaseUrl?: string) {
+    if (databaseUrl) {
+      try {
+        const pgRepo = new PostgresInventoryRepository(databaseUrl);
+        pgRepo.initSchema().catch((err: any) => {
+          console.warn('[InventoryModule] Auto-init schema warning:', err?.message || err);
+        });
+        this.repository = pgRepo;
+        console.log('[InventoryModule] Using PostgresInventoryRepository (inventory_db)');
+      } catch (err) {
+        console.warn('[InventoryModule] Fallback to InMemoryInventoryRepository:', err);
+        this.repository = new InMemoryInventoryRepository();
+        this.seedSampleStocks(this.repository as InMemoryInventoryRepository);
+      }
+    } else {
+      this.repository = new InMemoryInventoryRepository();
+      this.seedSampleStocks(this.repository as InMemoryInventoryRepository);
+    }
 
-    // Đồng bộ tồn kho ban đầu cho các sản phẩm mẫu (availableStock, reservedStock, totalStock)
+    this.reserveStockUseCase = new ReserveStockUseCase(this.repository);
+    this.releaseStockUseCase = new ReleaseStockUseCase(this.repository);
+  }
+
+  private seedSampleStocks(repo: InMemoryInventoryRepository): void {
     const sampleStocks = [
       { productId: 'prod-001', totalStock: 50, reservedStock: 0, availableStock: 50, version: 1 },
       { productId: 'IPHONE-15-PRO', totalStock: 50, reservedStock: 0, availableStock: 50, version: 1 },
@@ -442,11 +488,8 @@ export class InventoryModule {
       { productId: 'KEYCHRON-Q1-PRO', totalStock: 25, reservedStock: 0, availableStock: 25, version: 1 },
     ];
     for (const s of sampleStocks) {
-      this.repository.setStock(s);
+      repo.setStock(s);
     }
-
-    this.reserveStockUseCase = new ReserveStockUseCase(this.repository);
-    this.releaseStockUseCase = new ReleaseStockUseCase(this.repository);
   }
 }
 
@@ -458,7 +501,7 @@ export interface ChaosState {
 }
 
 export class OrderingModule {
-  public readonly orderRepository: InMemoryOrderRepository;
+  public readonly orderRepository: OrderRepository;
   public readonly unitOfWork: InMemoryUnitOfWork;
   public readonly createOrderUseCase: CreateOrderUseCase;
   public readonly getOrderByIdQueryHandler: GetOrderByIdQueryHandler;
@@ -469,9 +512,24 @@ export class OrderingModule {
   constructor(
     catalogModule: CatalogModule,
     inventoryModule: InventoryModule,
-    getChaosState: () => ChaosState = () => ({ catalog: true, inventory: true, payment: true, ordering: true })
+    getChaosState: () => ChaosState = () => ({ catalog: true, inventory: true, payment: true, ordering: true }),
+    databaseUrl?: string
   ) {
-    this.orderRepository = new InMemoryOrderRepository();
+    if (databaseUrl) {
+      try {
+        const pgRepo = new PostgresOrderRepository(databaseUrl);
+        pgRepo.initSchema().catch((err: any) => {
+          console.warn('[OrderingModule] Auto-init schema warning:', err?.message || err);
+        });
+        this.orderRepository = pgRepo;
+        console.log('[OrderingModule] Using PostgresOrderRepository (order_db)');
+      } catch (err) {
+        console.warn('[OrderingModule] Fallback to InMemoryOrderRepository:', err);
+        this.orderRepository = new InMemoryOrderRepository();
+      }
+    } else {
+      this.orderRepository = new InMemoryOrderRepository();
+    }
     this.unitOfWork = new InMemoryUnitOfWork();
     this.createOrderUseCase = new CreateOrderUseCase(this.orderRepository, this.unitOfWork);
     this.getOrderByIdQueryHandler = new GetOrderByIdQueryHandler(this.orderRepository);
@@ -507,10 +565,46 @@ export class OrderingModule {
             reason: 'INVENTORY_SERVICE_UNAVAILABLE: Dịch vụ Tồn kho đang tạm ngắt kết nối (503 Service Unavailable)',
           };
         }
-        return inventoryModule.reserveStockUseCase.execute(cmd);
+        let result = await inventoryModule.reserveStockUseCase.execute(cmd);
+        if (!result.success && cmd.items) {
+          const alternateItems = [];
+          for (const it of cmd.items) {
+            const p = (await catalogModule.repository.findById(it.productId)) ||
+                      (await catalogModule.repository.findBySku(it.productId));
+            const altId = p ? (p.id === it.productId ? p.sku : p.id) : it.productId;
+            alternateItems.push({ ...it, productId: altId });
+          }
+          const altResult = await inventoryModule.reserveStockUseCase.execute({
+            ...cmd,
+            items: alternateItems,
+          });
+          if (altResult.success) {
+            result = altResult;
+          }
+        }
+
+        // Sau khi giữ kho thành công, đồng bộ số lượng khả dụng
+        if (result.success && cmd.items) {
+          for (const it of cmd.items) {
+            const p = (await catalogModule.repository.findById(it.productId)) ||
+                      (await catalogModule.repository.findBySku(it.productId));
+            if (p) {
+              const s1 = await inventoryModule.repository.getStock(p.id);
+              const s2 = await inventoryModule.repository.getStock(p.sku);
+              const latestStock = s1 || s2;
+              if (latestStock) {
+                if (s1) await inventoryModule.repository.setStock({ ...latestStock, productId: p.id });
+                if (s2) await inventoryModule.repository.setStock({ ...latestStock, productId: p.sku });
+                await (catalogModule.repository as any).updateStock?.(p.id, latestStock.availableStock);
+              }
+            }
+          }
+        }
+        return result;
       },
       releaseStock: async (cmd: any) => {
-        return inventoryModule.releaseStockUseCase.execute(cmd);
+        const result = await inventoryModule.releaseStockUseCase.execute(cmd);
+        return result;
       },
     };
 
@@ -542,9 +636,14 @@ export class AppModule {
   constructor(config: AppConfig) {
     this.config = config;
     this.healthModule = new HealthModule(config);
-    this.catalogModule = new CatalogModule();
-    this.inventoryModule = new InventoryModule();
-    this.orderingModule = new OrderingModule(this.catalogModule, this.inventoryModule, () => this.chaosState);
+    this.catalogModule = new CatalogModule(config.catalogDatabaseUrl);
+    this.inventoryModule = new InventoryModule(config.inventoryDatabaseUrl);
+    this.orderingModule = new OrderingModule(
+      this.catalogModule,
+      this.inventoryModule,
+      () => this.chaosState,
+      config.orderDatabaseUrl
+    );
   }
 
   public static forRoot(env: NodeJS.ProcessEnv = process.env): AppModule {
@@ -731,6 +830,23 @@ export class NestApplication {
     if (url === `${prefix}/products`) {
       if (method === 'GET') {
         const res = await this.appModule.catalogModule.controller.getProducts();
+        if (res.statusCode === 200 && (res.data as any)?.items) {
+          try {
+            const stocks = await (this.appModule.inventoryModule.repository as any).getAllStocks();
+            const stockMap = new Map(stocks.map((s: any) => [s.productId, s.availableStock]));
+            const enrichedItems = (res.data as any).items.map((it: any) => {
+              const liveStock = stockMap.get(it.id) ?? stockMap.get(it.sku) ?? it.availableStock;
+              return {
+                ...it,
+                availableStock: liveStock,
+                stock: liveStock,
+              };
+            });
+            return { status: res.statusCode, body: { ...res.data, items: enrichedItems } };
+          } catch {
+            return { status: res.statusCode, body: res.data };
+          }
+        }
         return { status: res.statusCode, body: res.data };
       }
 
@@ -987,11 +1103,11 @@ export class NestApplication {
       }
 
       const result: any = await this.handleRequest(req.url ?? '/', req.method, headers, bodyData);
-      if (result.contentType === 'text/html') {
-        res.writeHead(result.status, { 'Content-Type': 'text/html; charset=utf-8' });
+      if (result.contentType && result.contentType.startsWith('text/html')) {
+        res.writeHead(result.status, { 'Content-Type': result.contentType });
         res.end(typeof result.body === 'string' ? result.body : String(result.body));
       } else {
-        res.writeHead(result.status, { 'Content-Type': 'application/json' });
+        res.writeHead(result.status, { 'Content-Type': result.contentType ?? 'application/json' });
         res.end(JSON.stringify(result.body));
       }
     });

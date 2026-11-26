@@ -21,6 +21,7 @@ ENV NODE_ENV=development
 
 # Copy package descriptors để tận dụng Docker layer caching
 COPY package*.json ./
+RUN npm install --omit=dev
 COPY packages/ ./packages/
 COPY apps/ ./apps/
 
@@ -34,8 +35,9 @@ WORKDIR /app
 RUN addgroup -g 1001 -S commerceflow && \
     adduser -u 1001 -S nodejs -G commerceflow
 
-# Copy package.json và mã nguồn
+# Copy package.json, dependencies và mã nguồn
 COPY --chown=nodejs:commerceflow package*.json ./
+COPY --chown=nodejs:commerceflow --from=builder /app/node_modules ./node_modules
 COPY --chown=nodejs:commerceflow apps/ ./apps/
 COPY --chown=nodejs:commerceflow packages/ ./packages/
 

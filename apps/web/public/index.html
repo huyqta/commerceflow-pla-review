@@ -1664,8 +1664,9 @@
       }
 
       // Check current stock in cache or simulate
-      const prod = productsCache.find(p => p.id === productId);
-      const isOutOfStock = (quantity > 1000) || (prod && (prod.stock || prod.availableStock || 0) < quantity);
+      const prod = productsCache.find(p => p.id === productId || p.sku === productId);
+      const currentAvail = prod ? Number(prod.availableStock ?? prod.stock ?? 0) : 0;
+      const isOutOfStock = (quantity > 1000) || (prod && currentAvail < quantity);
 
       if (isOutOfStock) {
         // SCENARIO R-02: OUT OF STOCK
@@ -1800,7 +1801,7 @@
 
       // Also call backend API to actually persist order & deduct stock
       try {
-        await fetch('/api/v1/orders', {
+        const orderRes = await fetch('/api/v1/orders', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1811,8 +1812,15 @@
             items: [{ productId, quantity }],
           }),
         });
-        loadInventory();
-        loadOrders();
+        if (!orderRes.ok) {
+          const errData = await orderRes.json().catch(() => ({}));
+          logEvent('ERROR', `Lỗi backend khi lưu đơn hàng: ${errData.message || orderRes.statusText}`);
+        } else {
+          logEvent('OK', `Đã lưu đơn hàng vào Database và trừ tồn kho thành công!`);
+        }
+        await loadCatalog();
+        await loadInventory();
+        await loadOrders();
       } catch (e) {
         console.warn('Backend sync:', e);
       }

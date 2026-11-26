@@ -8,6 +8,9 @@
     "start:gateway": "node --experimental-strip-types apps/api-gateway/src/main.ts",
     "start:web": "node --experimental-strip-types apps/api-gateway/src/main.ts",
     "test": "node --experimental-strip-types --test tests/**/*.test.ts tests/**/*.spec.ts"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
   }
 }
 

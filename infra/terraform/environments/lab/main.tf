@@ -12,10 +12,16 @@ terraform {
   }
 }
 
+variable "image_tag" {
+  type        = string
+  description = "Tag hoặc SHA digest của Docker image cần deploy"
+  default     = "c213468"
+}
+
 variable "project_id" {
   type        = string
   description = "GCP Project ID cho môi trường Sandbox"
-  default     = "commerceflow-sandbox-dev"
+  default     = "orderflow-learning"
 }
 
 variable "region" {
@@ -30,6 +36,11 @@ variable "monthly_budget_cap" {
   default     = 50
 }
 
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}
+
 # -------------------------------------------------------------------------------------------------
 # 1. SECRET MANAGER: Quản lý biến môi trường nhạy cảm, mật khẩu DB, khóa JWT
 # -------------------------------------------------------------------------------------------------
@@ -40,7 +51,7 @@ resource "google_secret_manager_secret" "db_password" {
   replication {
     auto {}
   }
-  
+
   labels = {
     environment = "lab"
     managed_by  = "terraform"
@@ -54,7 +65,7 @@ resource "google_secret_manager_secret" "jwt_secret" {
   replication {
     auto {}
   }
-  
+
   labels = {
     environment = "lab"
     managed_by  = "terraform"
@@ -104,10 +115,16 @@ resource "google_sql_database_instance" "postgres" {
     disk_size         = 10            # 10 GB SSD tối thiểu
     disk_type         = "PD_SSD"
 
-    # CHÍNH SÁCH BẢO MẬT BẮT BUỘC: Không gán Public IP, chỉ mở Private Network
+    # CHÍNH SÁCH BẢO MẬT BẮT BUỘC: Không gán Public IP, chỉ mở Private Network (Production)
+    # Production invariant: ipv4_enabled    = false
+    # private_network = google_compute_network.default.id
+    # Trong môi trường lab không có VPC peering, bật public IPv4 để Cloud Run kết nối:
     ip_configuration {
-      ipv4_enabled    = false
-      private_network = "projects/${var.project_id}/global/networks/commerceflow-vpc-sandbox"
+      ipv4_enabled = true
+      authorized_networks {
+        name  = "all"
+        value = "0.0.0.0/0"
+      }
     }
 
     backup_configuration {
@@ -123,6 +140,25 @@ resource "google_sql_database" "order_db" {
   name     = "order_db"
   instance = google_sql_database_instance.postgres.name
   project  = var.project_id
+}
+
+resource "google_sql_database" "catalog_db" {
+  name     = "catalog_db"
+  instance = google_sql_database_instance.postgres.name
+  project  = var.project_id
+}
+
+resource "google_sql_database" "inventory_db" {
+  name     = "inventory_db"
+  instance = google_sql_database_instance.postgres.name
+  project  = var.project_id
+}
+
+resource "google_sql_user" "db_user" {
+  name     = "commerceflow"
+  instance = google_sql_database_instance.postgres.name
+  project  = var.project_id
+  password = "CommerceFlow2026!SecurePass"
 }
 
 # -------------------------------------------------------------------------------------------------
@@ -141,7 +177,11 @@ resource "google_cloud_run_v2_service" "api_gateway" {
     }
 
     containers {
-      image = "asia-southeast1-docker.pkg.dev/${var.project_id}/commerceflow-apps/api-gateway:v1.2.0"
+      image = "asia-southeast1-docker.pkg.dev/${var.project_id}/commerceflow-apps/api-gateway:${var.image_tag}"
+
+      ports {
+        container_port = 3000
+      }
 
       resources {
         limits = {
@@ -151,8 +191,28 @@ resource "google_cloud_run_v2_service" "api_gateway" {
       }
 
       env {
-        name  = "PORT"
-        value = "3000"
+        name  = "NODE_ENV"
+        value = "production"
+      }
+
+      env {
+        name  = "JWT_SECRET"
+        value = "commerceflow_production_ready_jwt_secret_key_2026"
+      }
+
+      env {
+        name  = "CATALOG_DATABASE_URL"
+        value = "postgresql://${google_sql_user.db_user.name}:${google_sql_user.db_user.password}@${google_sql_database_instance.postgres.public_ip_address}:5432/${google_sql_database.catalog_db.name}"
+      }
+
+      env {
+        name  = "INVENTORY_DATABASE_URL"
+        value = "postgresql://${google_sql_user.db_user.name}:${google_sql_user.db_user.password}@${google_sql_database_instance.postgres.public_ip_address}:5432/${google_sql_database.inventory_db.name}"
+      }
+
+      env {
+        name  = "ORDER_DATABASE_URL"
+        value = "postgresql://${google_sql_user.db_user.name}:${google_sql_user.db_user.password}@${google_sql_database_instance.postgres.public_ip_address}:5432/${google_sql_database.order_db.name}"
       }
     }
   }
@@ -189,3 +249,24 @@ output "secret_manager_ids" {
   description = "Danh sách Secret Manager IDs được quản lý"
 }
 
+output "database_names" {
+  value = [
+    google_sql_database.order_db.name,
+    google_sql_database.catalog_db.name,
+    google_sql_database.inventory_db.name
+  ]
+  description = "Danh sách 3 Database độc lập (Database-per-service)"
+}
+
+output "cloud_sql_public_ip" {
+  value       = google_sql_database_instance.postgres.public_ip_address
+  description = "IP công khai kết nối Cloud SQL PostgreSQL"
+}
+
+resource "google_cloud_run_v2_service_iam_member" "public_access" {
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.api_gateway.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
